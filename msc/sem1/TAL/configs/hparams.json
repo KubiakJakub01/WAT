@@ -1,0 +1,6 @@
+{
+    "n_population": 250,
+    "n_generations": 200,
+    "crossover_per":  0.8,
+    "mutation_per":  0.2
+}
