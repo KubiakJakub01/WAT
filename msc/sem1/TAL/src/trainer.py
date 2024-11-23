@@ -15,63 +15,62 @@ class GeneticTrainer:
         """Implementing the genetic algorithm to find the optimal solution for the TSP problem
 
         Returns:
-            best_individual: Best individual found by the algorithm
+            outputs: Dictionary containing the best individual and best fitness
         """
+        outputs = {}
         population = self.initial_population()
-        fitness_probs = self.fitness_prob(population)
-        parents_list = self.draw_parents(population, fitness_probs)
-        offspring_list = self.create_offspring(parents_list)
-        mixed_offspring = parents_list + offspring_list
-
-        fitness_probs = self.fitness_prob(mixed_offspring)
-        sorted_fitness_indices = np.argsort(fitness_probs)[::-1]
-        best_fitness_indices = sorted_fitness_indices[0 : self.config.n_population]
-        best_mixed_offsrping = []
-        for i in best_fitness_indices:
-            best_mixed_offsrping.append(mixed_offspring[i])
-
         for i in range(0, self.config.n_generations):
             if i % 10 == 0:
                 log_info(
-                    f"Generation: {i=}, Best fitness: {self.total_dist_individual(best_mixed_offsrping[0])}"
+                    "Generation: %d, Best fitness: %.2f",
+                    i,
+                    self.total_dist_individual(self.best_individual(population)),
                 )
 
-            fitness_probs = self.fitness_prob(best_mixed_offsrping)
-            parents_list = self.draw_parents(best_mixed_offsrping, fitness_probs)
+            fitness_probs = self.fitness_prob(population)
+            parents_list = self.draw_parents(population, fitness_probs)
             offspring_list = self.create_offspring(parents_list)
             mixed_offspring = parents_list + offspring_list
             fitness_probs = self.fitness_prob(mixed_offspring)
             sorted_fitness_indices = np.argsort(fitness_probs)[::-1]
             best_fitness_indices = sorted_fitness_indices[
-                0 : int(0.8 * self.config.n_population)
+                0 : self.config.new_population_size
             ]
 
-            best_mixed_offsrping = []
+            best_mixed_offspring = []
             for i in best_fitness_indices:
-                best_mixed_offsrping.append(mixed_offspring[i])
+                best_mixed_offspring.append(mixed_offspring[i])
 
             old_population_indices = [
                 random.randint(0, (self.config.n_population - 1))
-                for _ in range(int(0.2 * self.config.n_population))
+                for _ in range(self.config.mutation_size)
             ]
             for i in old_population_indices:
-                best_mixed_offsrping.append(population[i])
+                best_mixed_offspring.append(population[i])
 
-            random.shuffle(best_mixed_offsrping)
+            random.shuffle(best_mixed_offspring)
+            population = best_mixed_offspring
 
-        return best_mixed_offsrping
+        best_individual = self.best_individual(population)
+        outputs = {
+            "best_individual": best_individual,
+            "best_fitness": self.total_dist_individual(best_individual),
+        }
+        return outputs
 
     def initial_population(self):
         """Generating initial population of cities randomly \
             selected from the all possible permutations of the given cities. 
-        
+
         Returns:
             population_perms: list of lists of cities names, each list is a permutation of the cities
         """
         population_perms = []
         possible_perms = list(permutations(self.config.cities_names))
-        random_ids = random.sample(range(0, len(possible_perms)), self.config.n_population)
-        
+        random_ids = random.sample(
+            range(0, len(possible_perms)), self.config.n_population
+        )
+
         for i in random_ids:
             population_perms.append(list(possible_perms[i]))
 
@@ -94,7 +93,7 @@ class GeneticTrainer:
             else:
                 total_dist += self._dist_to_cities(individual[i], individual[i + 1])
         return total_dist
-    
+
     def fitness_prob(self, population):
         """Calculating the fitness probability
 
@@ -226,7 +225,9 @@ class GeneticTrainer:
         for i in range(0, len(population)):
             total_dist_all_individuals.append(self.total_dist_individual(population[i]))
 
-        best_individual_index = total_dist_all_individuals.index(min(total_dist_all_individuals))
+        best_individual_index = total_dist_all_individuals.index(
+            min(total_dist_all_individuals)
+        )
         best_individual = population[best_individual_index]
 
         return best_individual

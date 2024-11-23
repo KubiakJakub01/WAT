@@ -30,6 +30,14 @@ class Config(BaseModel):
     def n_cities(self):
         return len(self.cities)
 
+    @property
+    def new_population_size(self):
+        return int(self.n_population * self.crossover_per)
+
+    @property
+    def mutation_size(self):
+        return int(self.n_population * self.mutation_per)
+
     @classmethod
     def from_files(cls, hparams_fp: Path, cities_fp: Path) -> "Config":
         with open(cities_fp, "r", encoding="utf-8") as f:
