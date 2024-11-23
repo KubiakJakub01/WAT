@@ -2,7 +2,6 @@ import csv
 import json
 from pathlib import Path
 
-import numpy as np
 from pydantic import BaseModel
 
 
@@ -37,18 +36,3 @@ class Config(BaseModel):
             cities = [City(**row) for row in csv.DictReader(f, delimiter="\t")]
         hparams = json.loads(hparams_fp.read_text())
         return cls(cities=cities, **hparams)
-
-    def dist_two_cities(self, city_1, city_2):
-        """Calculating the distance between two cities
-
-        Args:
-            city_1: City one name
-            city_2: City two name
-
-        Returns:
-            Calculated Euclidean distance between two cities
-        """
-        city_coords = self.city_coords
-        return np.sqrt(
-            np.sum((np.array(city_coords[city_1]) - np.array(city_coords[city_2])) ** 2)
-        )

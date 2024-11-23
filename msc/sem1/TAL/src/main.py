@@ -7,6 +7,7 @@ from pathlib import Path
 import numpy as np
 
 from .config import Config
+from .trainer import GeneticTrainer
 from .utils import log_info
 
 
@@ -17,13 +18,13 @@ def parse_args():
     parser.add_argument(
         "--cities_fp",
         type=Path,
-        required=True,
+        default=Path("configs/cities.tsv"),
         help="Path to the TSV file containing the cities",
     )
     parser.add_argument(
         "--hparams_fp",
         type=Path,
-        required=True,
+        default=Path("configs/hparams.json"),
         help="Path to the JSON file containing the hyperparameters",
     )
     return parser.parse_args()
@@ -222,17 +223,23 @@ def main():
     config = Config.from_files(args.hparams_fp, args.cities_fp)
     log_info("Loaded config:\n%s", json.dumps(config.model_dump(), indent=2))
 
-    best_mixed_offsrping = run_ga(config)
-    total_dist_all_individuals = []
-    for i in range(0, config.n_population):
-        total_dist_all_individuals.append(
-            total_dist_individual(config, best_mixed_offsrping[i])
-        )
-    index_minimum = np.argmin(total_dist_all_individuals)
-    minimum_distance = min(total_dist_all_individuals)
-    print("Minimum distance: ", minimum_distance)
-    shortest_path = best_mixed_offsrping[index_minimum]
-    print("Shortest path: ", shortest_path)
+    trainer = GeneticTrainer(config)
+    best_individual = trainer.fit()
+    log_info(
+        "Best individual found by the algorithm: %s", best_individual
+    )
+
+    # best_mixed_offsrping = run_ga(config)
+    # total_dist_all_individuals = []
+    # for i in range(0, config.n_population):
+    #     total_dist_all_individuals.append(
+    #         total_dist_individual(config, best_mixed_offsrping[i])
+    #     )
+    # index_minimum = np.argmin(total_dist_all_individuals)
+    # minimum_distance = min(total_dist_all_individuals)
+    # print("Minimum distance: ", minimum_distance)
+    # shortest_path = best_mixed_offsrping[index_minimum]
+    # print("Shortest path: ", shortest_path)
 
 
 if __name__ == "__main__":
