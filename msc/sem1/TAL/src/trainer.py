@@ -2,14 +2,16 @@ import random
 from itertools import permutations
 
 import numpy as np
+from torch.utils.tensorboard import SummaryWriter
 
 from .config import Config
-from .utils import euclidean_distance, log_info
+from .utils import euclidean_distance, log_info, plot_route
 
 
 class GeneticTrainer:
     def __init__(self, config: Config):
         self.config = config
+        self.writer = SummaryWriter(self.config.log_dir)
 
     def fit(self):
         """Implementing the genetic algorithm to find the optimal solution for the TSP problem
@@ -20,13 +22,7 @@ class GeneticTrainer:
         outputs = {}
         population = self.initial_population()
         for i in range(0, self.config.n_generations):
-            if i % 10 == 0:
-                log_info(
-                    "Generation: %d, Best fitness: %.2f",
-                    i,
-                    self.total_dist_individual(self.best_individual(population)),
-                )
-
+            self._log(i, population)
             fitness_probs = self.fitness_prob(population)
             parents_list = self.draw_parents(population, fitness_probs)
             offspring_list = self.create_offspring(parents_list)
@@ -34,7 +30,7 @@ class GeneticTrainer:
             fitness_probs = self.fitness_prob(mixed_offspring)
             sorted_fitness_indices = np.argsort(fitness_probs)[::-1]
             best_fitness_indices = sorted_fitness_indices[
-                0 : self.config.new_population_size
+                0 : self.config.crossover_size
             ]
 
             best_mixed_offspring = []
@@ -244,3 +240,28 @@ class GeneticTrainer:
         """
         city_coords = self.config.city_coords
         return euclidean_distance(city_coords[city_1], city_coords[city_2])
+
+    def _log(self, n_generation, population):
+        """Logging the information to tensorboard
+
+        Args:
+            n_generation: Current generation number
+            population: Population of individuals
+        """
+        if n_generation % self.config.log_interval == 0:
+            fitness = self.total_dist_individual(self.best_individual(population))
+            log_info(
+                "Generation: %d, Best fitness: %.2f",
+                n_generation,
+                fitness
+            )
+            self.writer.add_scalar(
+                "fitness", fitness, n_generation
+            )
+            route_plot = plot_route(
+                self.config,
+                self.best_individual(population),
+                fitness,
+                n_generation,
+            )
+            self.writer.add_image("route", route_plot, n_generation)

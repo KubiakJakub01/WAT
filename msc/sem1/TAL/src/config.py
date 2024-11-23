@@ -1,5 +1,6 @@
 import csv
 import json
+from datetime import datetime
 from pathlib import Path
 
 from pydantic import BaseModel
@@ -17,6 +18,12 @@ class Config(BaseModel):
     n_generations: int = 200
     crossover_per: float = 0.8
     mutation_per: float = 0.2
+    log_interval: int = 10
+    log_dir: Path = Path("logs")
+
+    def model_post_init(self, __context):
+        self.log_dir = self.log_dir / datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        self.log_dir.mkdir(exist_ok=True, parents=True)
 
     @property
     def city_coords(self):
@@ -31,12 +38,12 @@ class Config(BaseModel):
         return len(self.cities)
 
     @property
-    def new_population_size(self):
+    def crossover_size(self):
         return int(self.n_population * self.crossover_per)
 
     @property
     def mutation_size(self):
-        return int(self.n_population * self.mutation_per)
+        return self.n_population - self.crossover_size
 
     @classmethod
     def from_files(cls, hparams_fp: Path, cities_fp: Path) -> "Config":

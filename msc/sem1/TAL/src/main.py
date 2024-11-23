@@ -2,8 +2,6 @@ import argparse
 import json
 from pathlib import Path
 
-import numpy as np
-
 from .config import Config
 from .trainer import GeneticTrainer
 from .utils import log_info
@@ -31,7 +29,6 @@ def parse_args():
 def main():
     args = parse_args()
     config = Config.from_files(args.hparams_fp, args.cities_fp)
-    log_info("Loaded config:\n%s", json.dumps(config.model_dump(), indent=2))
 
     trainer = GeneticTrainer(config)
     outputs = trainer.fit()
