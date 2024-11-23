@@ -250,14 +250,8 @@ class GeneticTrainer:
         """
         if n_generation % self.config.log_interval == 0:
             fitness = self.total_dist_individual(self.best_individual(population))
-            log_info(
-                "Generation: %d, Best fitness: %.2f",
-                n_generation,
-                fitness
-            )
-            self.writer.add_scalar(
-                "fitness", fitness, n_generation
-            )
+            log_info("Generation: %d, Best fitness: %.2f", n_generation, fitness)
+            self.writer.add_scalar("fitness", fitness, n_generation)
             route_plot = plot_route(
                 self.config,
                 self.best_individual(population),
