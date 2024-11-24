@@ -164,7 +164,6 @@ def display_max_deviation_table(max_deviation_table, output_fp):
     for entry in max_deviation_table:
         print(f"[{entry[0]:.2f}, {entry[1]:.2f}] | {entry[2]:.6f}")
 
-    # Save the table to a CSV file
     output_fp.parent.mkdir(parents=True, exist_ok=True)
     with open(output_fp, "w") as f:
         f.write("Interval (θ_i, θ_{i+1}),Max Deviation\n")
@@ -172,19 +171,39 @@ def display_max_deviation_table(max_deviation_table, output_fp):
             f.write(f"[{entry[0]:.2f}, {entry[1]:.2f}],{entry[2]:.6f}\n")
 
 
-def plot_data(theta, r, new_theta, new_r, output_fp):
-    """Plot the original and interpolated data.
+def plot_data(theta, r, new_theta, new_r, extended_theta, extended_r, output_fp):
+    """Plot the original and interpolated data with extended interpolation.
 
     Args:
         theta (np.array): Array of theta values.
         r (np.array): Array of r(theta) values.
-        new_theta (np.array): Array of new theta values.
-        new_r (np.array): Array of new r(theta) values.
+        new_theta (np.array): Array of new theta values for [0, π/4].
+        new_r (np.array): Array of new r(theta) values for [0, π/4].
+        extended_theta (np.array): Array of theta values for the full interpolation.
+        extended_r (np.array): Array of r(theta) values for the full interpolation.
         output_fp (str): Path to the output plot file.
     """
     plt.figure(figsize=(10, 6))
+    # Plot original data
     plt.plot(theta, r, "o", label="Original Data", markersize=8)
-    plt.plot(new_theta, new_r, "-", label="Cubic Spline Interpolation", linewidth=2)
+    # Plot cubic spline interpolation for the full range
+    plt.plot(
+        extended_theta,
+        extended_r,
+        "-",
+        label="Cubic Spline (Full Range)",
+        color="blue",
+        linewidth=2,
+    )
+    # Plot cubic spline interpolation for [0, π/4]
+    plt.plot(
+        new_theta,
+        new_r,
+        "-",
+        label="Cubic Spline [0, π/4]",
+        color="orange",
+        linewidth=2,
+    )
     plt.xlabel("Theta (radians)")
     plt.ylabel("r(Theta)")
     plt.title("Cubic Spline Interpolation of Polar Data")
@@ -209,6 +228,10 @@ if __name__ == "__main__":
     new_theta = np.arange(0, np.pi / 4, 0.05)
     new_r = evaluate_spline(a, b, c, d, theta, new_theta)
 
+    # Generate theta values for the full range interpolation (same step size)
+    extended_theta = np.linspace(np.min(theta), np.max(theta), 500)
+    extended_r = evaluate_spline(a, b, c, d, theta, extended_theta)
+
     # Save the interpolated data
     save_interpolated_data(new_theta, new_r, args.output_fp)
 
@@ -217,4 +240,4 @@ if __name__ == "__main__":
     display_max_deviation_table(max_deviation_table, args.table_fp)
 
     # Plot the data
-    plot_data(theta, r, new_theta, new_r, args.plot_fp)
+    plot_data(theta, r, new_theta, new_r, extended_theta, extended_r, args.plot_fp)

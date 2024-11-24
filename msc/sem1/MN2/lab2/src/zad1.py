@@ -128,6 +128,7 @@ def quality(theta_vals, interp_vals, window_size):
     Args:
         theta_vals (np.array): Array of theta values.
         interp_vals (np.array): Array of interpolated values.
+        window_size (int): Window size for calculating the quality.
 
     Returns:
         float: Quality of the interpolation.
@@ -137,7 +138,6 @@ def quality(theta_vals, interp_vals, window_size):
     idx1 = np.argmin(np.abs(theta_vals - theta1))
     idx2 = np.argmin(np.abs(theta_vals - theta2))
 
-    window_size = 5
     segment1 = np.array(
         interp_vals[
             max(0, idx1 - window_size) : min(len(theta_vals), idx1 + window_size)
