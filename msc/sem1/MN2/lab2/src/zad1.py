@@ -1,5 +1,44 @@
-import numpy as np
+import argparse
+import json
+from pathlib import Path
+
 import matplotlib.pyplot as plt
+import numpy as np
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='Fourier Interpolation')
+    parser.add_argument(
+        '--min_n',
+        type=int,
+        default=40,
+        help='Number of nodes for interpolation'
+    )
+    parser.add_argument(
+        '--max_n',
+        type=int,
+        default=90,
+        help='Number of nodes for interpolation'
+    )
+    parser.add_argument(
+        '--window_size',
+        type=int,
+        default=5,
+        help='Window size for calculating the quality'
+    )
+    parser.add_argument(
+        '--plot_fp',
+        type=Path,
+        default='outputs/zad1/plot.png',
+        help='Path to the output plot file'
+    )
+    parser.add_argument(
+        '--output_fp',
+        type=Path,
+        default='outputs/zad1/output.txt',
+        help='Path to the output file'
+    )
+    return parser.parse_args()
 
 
 def r(theta):
@@ -121,7 +160,55 @@ def quality(theta_vals, interp_vals):
     )
 
 
+def plot_interpolation(fine_theta, interpolated_vals, optimal_n, output_fp):
+    """Plot the interpolation.
+
+    Args:
+        theta_vals (np.array): Array of theta values.
+        interp_vals (np.array): Array of interpolated values.
+        output_fp (Path): Path to the output plot file.
+    """
+    fig, ax = plt.subplots(subplot_kw={'projection': 'polar'}, figsize=(8, 8))
+    ax.plot(fine_theta, interpolated_vals, label='Fourier Interpolation', color='blue')
+    ax.scatter(np.linspace(0, 2*np.pi, optimal_n, endpoint=False), [r(t) for t in np.linspace(0, 2*np.pi, optimal_n, endpoint=False)], color='red', label='Interpolation Nodes')
+    
+    # Highlight areas with potential Gibbs effect
+    ax.axvspan(np.pi/2 - 0.1, np.pi/2 + 0.1, color='green', alpha=0.3, label='Oscillation area 1')
+    ax.axvspan(3*np.pi/2 - 0.1, 3*np.pi/2 + 0.1, color='orange', alpha=0.3, label='Oscillation area 2')
+    
+    ax.set_title(f'Optimal Fourier Interpolation (n={optimal_n})', va='bottom')
+    ax.legend(loc='upper right')
+
+    if output_fp is not None:
+        output_fp.parent.mkdir(parents=True, exist_ok=True)
+        plt.savefig(output_fp)
+    else:
+        plt.show()
+
+
+def display_results(optimal_n, optimal_theta0, optimal_a0, optimal_aj, optimal_bj, optimal_quality, output_fp):
+    print(f"Optimal n: {optimal_n}")
+    print(f"Optimal theta values: {optimal_theta0}")
+    print(f"Optimal Fourier coefficients (a0): {optimal_a0}")
+    print(f"Optimal Fourier coefficients (aj): {optimal_aj}")
+    print(f"Optimal Fourier coefficients (bj): {optimal_bj}")
+    print(f"Quality function value: {optimal_quality}")
+
+    output_fp.parent.mkdir(parents=True, exist_ok=True)
+    with open(output_fp, 'w') as f:
+        json.dump({
+            'n': optimal_n,
+            'theta': optimal_theta0.tolist(),
+            'a0': optimal_a0,
+            'aj': optimal_aj.tolist(),
+            'bj': optimal_bj.tolist(),
+            'quality': optimal_quality
+        }, f, indent=4)
+
+
 def main():
+    args = parse_args()
+
     optimal_n = None
     optimal_theta0 = None
     optimal_a0 = None
@@ -130,7 +217,7 @@ def main():
     optimal_quality = float("inf")
 
     # Find the optimal solution
-    for n in range(40, 91):
+    for n in range(args.min_n, args.max_n + 1):
         theta, values = generate_nodes(n)
         a0, aj, bj = compute_fourier_coefficients(n, values)
 
@@ -159,41 +246,9 @@ def main():
     ]
 
     # Plot the interpolation
-    fig, ax = plt.subplots(subplot_kw={"projection": "polar"}, figsize=(8, 8))
-    ax.plot(fine_theta, interpolated_vals, label="Fourier Interpolation", color="blue")
-    ax.scatter(
-        np.linspace(0, 2 * np.pi, optimal_n, endpoint=False),
-        [r(t) for t in np.linspace(0, 2 * np.pi, optimal_n, endpoint=False)],
-        color="red",
-        label="Interpolation Nodes",
-    )
+    plot_interpolation(fine_theta, interpolated_vals, optimal_n, args.plot_fp)
 
-    # Highlight areas with potential Gibbs effect
-    ax.axvspan(
-        np.pi / 2 - 0.1,
-        np.pi / 2 + 0.1,
-        color="green",
-        alpha=0.3,
-        label="Oscillation area 1",
-    )
-    ax.axvspan(
-        3 * np.pi / 2 - 0.1,
-        3 * np.pi / 2 + 0.1,
-        color="orange",
-        alpha=0.3,
-        label="Oscillation area 2",
-    )
-
-    ax.set_title(f"Optimal Fourier Interpolation (n={optimal_n})", va="bottom")
-    ax.legend(loc="upper right")
-    plt.show()
-
-    print(f"Optimal n: {optimal_n}")
-    print(f"Optimal theta values: {optimal_theta0}")
-    print(f"Optimal Fourier coefficients (a0): {optimal_a0}")
-    print(f"Optimal Fourier coefficients (aj): {optimal_aj}")
-    print(f"Optimal Fourier coefficients (bj): {optimal_bj}")
-    print(f"Quality function value: {optimal_quality}")
+    display_results(optimal_n, optimal_theta0, optimal_a0, optimal_aj, optimal_bj, optimal_quality, args.output_fp)
 
 
 if __name__ == "__main__":
