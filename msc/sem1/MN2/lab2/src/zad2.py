@@ -6,71 +6,72 @@ import matplotlib.pyplot as plt
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Cubic Spline Interpolation')
+    parser = argparse.ArgumentParser(description="Cubic Spline Interpolation")
     parser.add_argument(
-        '--data_fp',
+        "--data_fp",
         type=Path,
-        default='data/dane_polar_F1.csv',
-        help='Path to the input CSV file'
+        default="data/dane_polar_F1.csv",
+        help="Path to the input CSV file",
     )
     parser.add_argument(
-        '--output_fp',
+        "--output_fp",
         type=Path,
-        default='outputs/zad2/dane_polar2.csv',
-        help='Path to the output CSV file'
+        default="outputs/zad2/dane_polar2.csv",
+        help="Path to the output CSV file",
     )
     parser.add_argument(
-        '--table_fp',
+        "--table_fp",
         type=Path,
-        default='outputs/zad2/max_deviations.csv',
-        help='Path to the output max deviation table file'
+        default="outputs/zad2/max_deviations.csv",
+        help="Path to the output max deviation table file",
     )
     parser.add_argument(
-        '--plot_fp',
+        "--plot_fp",
         type=Path,
-        default='outputs/zad2/plot.png',
-        help='Path to the output plot file'
+        default="outputs/zad2/plot.png",
+        help="Path to the output plot file",
     )
     return parser.parse_args()
 
 
 def cubic_spline(theta, r):
     """Calculate coefficients for cubic spline interpolation.
-    
+
     Args:
         theta (np.array): Array of theta values.
         r (np.array): Array of r(theta) values.
-        
+
     Returns:
         tuple: Tuple containing coefficients a, b, c, d and h.
     """
     n = len(theta)
 
-    h = [theta[i+1] - theta[i] for i in range(n - 1)]
+    h = [theta[i + 1] - theta[i] for i in range(n - 1)]
 
     A = np.zeros((n, n))
     b = np.zeros(n)
-    
+
     A[0][0] = 1
     A[-1][-1] = 1
-    
+
     for i in range(1, n - 1):
         A[i][i - 1] = h[i - 1]
         A[i][i] = 2 * (h[i - 1] + h[i])
         A[i][i + 1] = h[i]
         b[i] = 3 * ((r[i + 1] - r[i]) / h[i] - (r[i] - r[i - 1]) / h[i - 1])
-    
+
     c = np.linalg.solve(A, b)
 
     a = r[:-1]
     b = np.zeros(n - 1)
     d = np.zeros(n - 1)
-    
+
     for i in range(n - 1):
         b[i] = (r[i + 1] - r[i]) / h[i] - (h[i] / 3) * (2 * c[i] + c[i + 1])
         d[i] = (c[i + 1] - c[i]) / (3 * h[i])
 
     return a, b, c, d, h
+
 
 def evaluate_spline(a, b, c, d, theta, theta_points):
     """Evaluate cubic spline interpolation for the given theta points.
@@ -120,19 +121,19 @@ def calculate_deviation(theta, r, a, b, c, d):
         deviation = np.abs(cubic_interp - linear_interp)
         max_deviation = np.max(deviation)
         deviations.append((theta[i], theta[i + 1], max_deviation))
-    
+
     return deviations
 
 
 def load_data(data_fp):
     """Load data from the given CSV file.
-    
+
     Args:
         data_fp (str): Path to the input CSV file.
-        
+
     Returns:
         tuple: Tuple containing theta and r values."""
-    data = np.loadtxt(data_fp, delimiter=',')
+    data = np.loadtxt(data_fp, delimiter=",")
     theta = data[:, 0]
     r = data[:, 1]
     return theta, r
@@ -148,7 +149,7 @@ def save_interpolated_data(new_theta, new_r, output_fp):
     """
     interpolated_data = np.column_stack((new_theta, new_r))
     output_fp.parent.mkdir(parents=True, exist_ok=True)
-    np.savetxt(output_fp, interpolated_data, delimiter=',', fmt='%g')
+    np.savetxt(output_fp, interpolated_data, delimiter=",", fmt="%g")
 
 
 def display_max_deviation_table(max_deviation_table, output_fp):
@@ -165,7 +166,7 @@ def display_max_deviation_table(max_deviation_table, output_fp):
 
     # Save the table to a CSV file
     output_fp.parent.mkdir(parents=True, exist_ok=True)
-    with open(output_fp, 'w') as f:
+    with open(output_fp, "w") as f:
         f.write("Interval (θ_i, θ_{i+1}),Max Deviation\n")
         for entry in max_deviation_table:
             f.write(f"[{entry[0]:.2f}, {entry[1]:.2f}],{entry[2]:.6f}\n")
@@ -182,11 +183,11 @@ def plot_data(theta, r, new_theta, new_r, output_fp):
         output_fp (str): Path to the output plot file.
     """
     plt.figure(figsize=(10, 6))
-    plt.plot(theta, r, 'o', label='Original Data', markersize=8)
-    plt.plot(new_theta, new_r, '-', label='Cubic Spline Interpolation', linewidth=2)
-    plt.xlabel('Theta (radians)')
-    plt.ylabel('r(Theta)')
-    plt.title('Cubic Spline Interpolation of Polar Data')
+    plt.plot(theta, r, "o", label="Original Data", markersize=8)
+    plt.plot(new_theta, new_r, "-", label="Cubic Spline Interpolation", linewidth=2)
+    plt.xlabel("Theta (radians)")
+    plt.ylabel("r(Theta)")
+    plt.title("Cubic Spline Interpolation of Polar Data")
     plt.legend()
     plt.grid(True)
     if output_fp:
@@ -196,7 +197,7 @@ def plot_data(theta, r, new_theta, new_r, output_fp):
         plt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     args = parse_args()
 
     theta, r = load_data(args.data_fp)
@@ -205,7 +206,7 @@ if __name__ == '__main__':
     a, b, c, d, h = cubic_spline(theta, r)
 
     # Generate new theta values for interpolation (0 to π/4 with a step of 0.05)
-    new_theta = np.arange(0, np.pi/4, 0.05)
+    new_theta = np.arange(0, np.pi / 4, 0.05)
     new_r = evaluate_spline(a, b, c, d, theta, new_theta)
 
     # Save the interpolated data

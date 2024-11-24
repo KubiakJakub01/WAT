@@ -7,36 +7,30 @@ import numpy as np
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Fourier Interpolation')
+    parser = argparse.ArgumentParser(description="Fourier Interpolation")
     parser.add_argument(
-        '--min_n',
-        type=int,
-        default=40,
-        help='Number of nodes for interpolation'
+        "--min_n", type=int, default=40, help="Number of nodes for interpolation"
     )
     parser.add_argument(
-        '--max_n',
-        type=int,
-        default=90,
-        help='Number of nodes for interpolation'
+        "--max_n", type=int, default=90, help="Number of nodes for interpolation"
     )
     parser.add_argument(
-        '--window_size',
+        "--window_size",
         type=int,
         default=5,
-        help='Window size for calculating the quality'
+        help="Window size for calculating the quality",
     )
     parser.add_argument(
-        '--plot_fp',
+        "--plot_fp",
         type=Path,
-        default='outputs/zad1/plot.png',
-        help='Path to the output plot file'
+        default="outputs/zad1/plot.png",
+        help="Path to the output plot file",
     )
     parser.add_argument(
-        '--output_fp',
+        "--output_fp",
         type=Path,
-        default='outputs/zad1/output.txt',
-        help='Path to the output file'
+        default="outputs/zad1/output.txt",
+        help="Path to the output file",
     )
     return parser.parse_args()
 
@@ -128,7 +122,7 @@ def fourier_interpolation(n, a0, aj, bj, theta):
     return result
 
 
-def quality(theta_vals, interp_vals):
+def quality(theta_vals, interp_vals, window_size):
     """Calculate the quality of the interpolation.
 
     Args:
@@ -143,7 +137,7 @@ def quality(theta_vals, interp_vals):
     idx1 = np.argmin(np.abs(theta_vals - theta1))
     idx2 = np.argmin(np.abs(theta_vals - theta2))
 
-    window_size = 5  # Window size for calculating the quality
+    window_size = 5
     segment1 = np.array(
         interp_vals[
             max(0, idx1 - window_size) : min(len(theta_vals), idx1 + window_size)
@@ -168,16 +162,33 @@ def plot_interpolation(fine_theta, interpolated_vals, optimal_n, output_fp):
         interp_vals (np.array): Array of interpolated values.
         output_fp (Path): Path to the output plot file.
     """
-    fig, ax = plt.subplots(subplot_kw={'projection': 'polar'}, figsize=(8, 8))
-    ax.plot(fine_theta, interpolated_vals, label='Fourier Interpolation', color='blue')
-    ax.scatter(np.linspace(0, 2*np.pi, optimal_n, endpoint=False), [r(t) for t in np.linspace(0, 2*np.pi, optimal_n, endpoint=False)], color='red', label='Interpolation Nodes')
-    
+    fig, ax = plt.subplots(subplot_kw={"projection": "polar"}, figsize=(8, 8))
+    ax.plot(fine_theta, interpolated_vals, label="Fourier Interpolation", color="blue")
+    ax.scatter(
+        np.linspace(0, 2 * np.pi, optimal_n, endpoint=False),
+        [r(t) for t in np.linspace(0, 2 * np.pi, optimal_n, endpoint=False)],
+        color="red",
+        label="Interpolation Nodes",
+    )
+
     # Highlight areas with potential Gibbs effect
-    ax.axvspan(np.pi/2 - 0.1, np.pi/2 + 0.1, color='green', alpha=0.3, label='Oscillation area 1')
-    ax.axvspan(3*np.pi/2 - 0.1, 3*np.pi/2 + 0.1, color='orange', alpha=0.3, label='Oscillation area 2')
-    
-    ax.set_title(f'Optimal Fourier Interpolation (n={optimal_n})', va='bottom')
-    ax.legend(loc='upper right')
+    ax.axvspan(
+        np.pi / 2 - 0.1,
+        np.pi / 2 + 0.1,
+        color="green",
+        alpha=0.3,
+        label="Oscillation area 1",
+    )
+    ax.axvspan(
+        3 * np.pi / 2 - 0.1,
+        3 * np.pi / 2 + 0.1,
+        color="orange",
+        alpha=0.3,
+        label="Oscillation area 2",
+    )
+
+    ax.set_title(f"Optimal Fourier Interpolation (n={optimal_n})", va="bottom")
+    ax.legend(loc="upper right")
 
     if output_fp is not None:
         output_fp.parent.mkdir(parents=True, exist_ok=True)
@@ -186,7 +197,15 @@ def plot_interpolation(fine_theta, interpolated_vals, optimal_n, output_fp):
         plt.show()
 
 
-def display_results(optimal_n, optimal_theta0, optimal_a0, optimal_aj, optimal_bj, optimal_quality, output_fp):
+def display_results(
+    optimal_n,
+    optimal_theta0,
+    optimal_a0,
+    optimal_aj,
+    optimal_bj,
+    optimal_quality,
+    output_fp,
+):
     print(f"Optimal n: {optimal_n}")
     print(f"Optimal theta values: {optimal_theta0}")
     print(f"Optimal Fourier coefficients (a0): {optimal_a0}")
@@ -195,15 +214,19 @@ def display_results(optimal_n, optimal_theta0, optimal_a0, optimal_aj, optimal_b
     print(f"Quality function value: {optimal_quality}")
 
     output_fp.parent.mkdir(parents=True, exist_ok=True)
-    with open(output_fp, 'w') as f:
-        json.dump({
-            'n': optimal_n,
-            'theta': optimal_theta0.tolist(),
-            'a0': optimal_a0,
-            'aj': optimal_aj.tolist(),
-            'bj': optimal_bj.tolist(),
-            'quality': optimal_quality
-        }, f, indent=4)
+    with open(output_fp, "w") as f:
+        json.dump(
+            {
+                "n": optimal_n,
+                "theta": optimal_theta0.tolist(),
+                "a0": optimal_a0,
+                "aj": optimal_aj.tolist(),
+                "bj": optimal_bj.tolist(),
+                "quality": optimal_quality,
+            },
+            f,
+            indent=4,
+        )
 
 
 def main():
@@ -228,7 +251,7 @@ def main():
         ]
 
         # Calculate the quality of the interpolation
-        current_quality = quality(fine_theta, interpolated_vals)
+        current_quality = quality(fine_theta, interpolated_vals, args.window_size)
 
         if current_quality < optimal_quality:
             optimal_quality = current_quality
@@ -248,7 +271,15 @@ def main():
     # Plot the interpolation
     plot_interpolation(fine_theta, interpolated_vals, optimal_n, args.plot_fp)
 
-    display_results(optimal_n, optimal_theta0, optimal_a0, optimal_aj, optimal_bj, optimal_quality, args.output_fp)
+    display_results(
+        optimal_n,
+        optimal_theta0,
+        optimal_a0,
+        optimal_aj,
+        optimal_bj,
+        optimal_quality,
+        args.output_fp,
+    )
 
 
 if __name__ == "__main__":
