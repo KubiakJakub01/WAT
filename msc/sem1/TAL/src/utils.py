@@ -78,7 +78,13 @@ def plot_route(
     y_shortest = [citi_coords[city_name][1] for city_name in cities_names]
 
     fig, ax = plt.subplots(figsize=(10, 8))
-    ax.plot(x_shortest + [x_shortest[0]], y_shortest + [y_shortest[0]], "--go", label="Best Route", linewidth=2.5)
+    ax.plot(
+        x_shortest + [x_shortest[0]],
+        y_shortest + [y_shortest[0]],
+        "--go",
+        label="Best Route",
+        linewidth=2.5,
+    )
     plt.legend()
 
     for i, citi_name in enumerate(cities_names, 1):

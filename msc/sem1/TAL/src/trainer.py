@@ -12,7 +12,9 @@ class GeneticTrainer:
     def __init__(self, config: Config):
         self.config = config
         self.writer = SummaryWriter(self.config.log_dir)
-        self.writer.add_text("config", config.model_dump_json(exclude=("log_dir", "cities"), indent=2))
+        self.writer.add_text(
+            "config", config.model_dump_json(exclude=("log_dir", "cities"), indent=2)
+        )
 
     def fit(self):
         """Implementing the genetic algorithm to find the optimal solution for the TSP problem
