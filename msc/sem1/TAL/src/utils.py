@@ -77,8 +77,8 @@ def plot_route(
     x_shortest = [citi_coords[city_name][0] for city_name in cities_names]
     y_shortest = [citi_coords[city_name][1] for city_name in cities_names]
 
-    fig, ax = plt.subplots()
-    ax.plot(x_shortest, y_shortest, "--go", label="Best Route", linewidth=2.5)
+    fig, ax = plt.subplots(figsize=(10, 8))
+    ax.plot(x_shortest + [x_shortest[0]], y_shortest + [y_shortest[0]], "--go", label="Best Route", linewidth=2.5)
     plt.legend()
 
     for i, citi_name in enumerate(cities_names, 1):
@@ -86,19 +86,8 @@ def plot_route(
         ax.plot(x, y, "ro")
         ax.annotate(f"{i}-{citi_name}", (x, y), fontsize=20)
 
-    plt.title(label="TSP Route", fontsize=25, color="k")
-
-    str_params = f"""
-                {generation}/{config.n_generations} Generations
-                {config.n_population} Population Size
-                {config.crossover_per} Crossover
-                {config.mutation_per} Mutation"""
-
-    # str_params = '\n'+str(generation)+' Generations\n'+str(config.n_population)+' Population Size\n'+str(config.crossover_per)+' Crossover\n'+str(config.mutation_per)+' Mutation'
-    plt.suptitle(
-        "Total Distance Travelled: " + str(distance) + str_params, fontsize=18, y=1.047
-    )
-
-    fig.set_size_inches(16, 12)
+    plt.title(label=f"Total Distance Travelled: {distance:.2f}", fontsize=20)
+    plt.xlabel("X")
+    plt.ylabel("Y")
     plt.grid(color="k", linestyle="dotted")
     return fig_to_numpy(fig)
