@@ -29,7 +29,7 @@ def parse_args():
     parser.add_argument(
         "--output_fp",
         type=Path,
-        default="outputs/zad1/output.txt",
+        default="outputs/zad1/output.json",
         help="Path to the output file",
     )
     return parser.parse_args()
