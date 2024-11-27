@@ -1,4 +1,5 @@
 import argparse
+import tracemalloc
 from pathlib import Path
 from time import time
 
@@ -27,25 +28,35 @@ def parse_args():
     return parser.parse_args()
 
 
+def fn_with_memory_time_profiling(fn, *args, **kwargs):
+    tracemalloc.start()
+    start_time = time()
+    result = fn(*args, **kwargs)
+    end_time = time()
+    _, peak = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+    return result, end_time - start_time, peak
+
+
 def main():
     args = parse_args()
     config = Config.from_files(args.hparams_fp, args.cities_fp)
 
     log_info("Starting the genetic algorithm...")
     trainer = GeneticTrainer(config)
-    start_time = time()
-    outputs = trainer.fit()
-    end_time = time()
+    outputs, run_time, peak_memory = fn_with_memory_time_profiling(trainer.fit)
     log_info("Best individual: %s", outputs["best_individual"])
     log_info("Minimum cost using genetic algorithm: %.2f", outputs["best_fitness"])
-    log_info("Genetic algorithm time taken: %.2f seconds", end_time - start_time)
+    log_info("Genetic algorithm time taken: %.2f seconds", run_time)
+    log_info("Genetic algorithm peak memory usage: %.2f MB", peak_memory / 10**6)
 
     log_info("Starting the dynamic programming algorithm...")
-    start_time = time()
-    min_cost = tsp_dynamic_programming(config.city_coords)
-    end_time = time()
+    min_cost, run_time, peak_memory = fn_with_memory_time_profiling(
+        tsp_dynamic_programming, config.city_coords
+    )
     log_info("Minimum cost using dynamic programming: %.2f", min_cost)
-    log_info("Dynamic programming time taken: %.2f seconds", end_time - start_time)
+    log_info("Dynamic programming time taken: %.2f seconds", run_time)
+    log_info("Dynamic programming peak memory usage: %.2f MB", peak_memory / 10**6)
 
 
 if __name__ == "__main__":

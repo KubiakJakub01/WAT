@@ -4,15 +4,14 @@ import random
 
 import geonamescache
 
+from .utils import log_info
 
 
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Generate cities with random coordinates"
     )
-    parser.add_argument(
-        "--output_fp", type=str, help="Path to the output TSV file"
-    )
+    parser.add_argument("--output_fp", type=str, help="Path to the output TSV file")
     parser.add_argument(
         "--n_cities", type=int, default=10, help="Number of cities to generate"
     )
@@ -38,7 +37,7 @@ def generate_cities(n_cities, min_coord, max_coord):
     """
     cities = []
     gc = geonamescache.GeonamesCache()
-    city_names = [x['name'] for x in gc.get_cities().values()]
+    city_names = [x["name"] for x in gc.get_cities().values()]
     city_names = random.sample(city_names, n_cities)
     for city_name in city_names:
         city = {
@@ -65,7 +64,9 @@ def save_cities(cities, file_path):
 
 def main():
     args = parse_args()
+    log_info("Generating %d cities...", args.n_cities)
     cities = generate_cities(args.n_cities, args.min_coord, args.max_coord)
+    log_info("Saving cities to %s", args.output_fp)
     save_cities(cities, args.output_fp)
 
 

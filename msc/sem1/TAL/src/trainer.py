@@ -70,7 +70,6 @@ class GeneticTrainer:
             population_perms.append(list(next(all_permutations)))
         return population_perms
 
-
     def total_dist_individual(self, individual):
         """Calculating the total distance traveled by individual, \
         one individual means one possible solution (1 permutation)
