@@ -64,16 +64,12 @@ class GeneticTrainer:
         Returns:
             population_perms: list of lists of cities names, each list is a permutation of the cities
         """
+        all_permutations = permutations(self.config.cities_names)
         population_perms = []
-        possible_perms = list(permutations(self.config.cities_names))
-        random_ids = random.sample(
-            range(0, len(possible_perms)), self.config.n_population
-        )
-
-        for i in random_ids:
-            population_perms.append(list(possible_perms[i]))
-
+        for _ in range(self.config.n_population):
+            population_perms.append(list(next(all_permutations)))
         return population_perms
+
 
     def total_dist_individual(self, individual):
         """Calculating the total distance traveled by individual, \
