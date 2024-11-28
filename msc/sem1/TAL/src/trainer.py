@@ -9,14 +9,17 @@ from .utils import euclidean_distance, log_info, plot_route
 
 
 class GeneticTrainer:
-    def __init__(self, config: Config):
+    def __init__(self, config: Config, whenever_log_to_tb: bool = False):
         self.config = config
-        self.writer = SummaryWriter(self.config.log_dir)
-        self.writer.add_text(
-            "config", config.model_dump_json(exclude=("log_dir", "cities"), indent=2)
-        )
+        self.whenever_log_to_tb = whenever_log_to_tb
+        if whenever_log_to_tb:
+            self.writer = SummaryWriter(self.config.log_dir)
+            self.writer.add_text(
+                "config",
+                config.model_dump_json(exclude=("log_dir", "cities"), indent=2),
+            )
 
-    def fit(self):
+    def fit(self, stop_threshold: float = 0.0):
         """Implementing the genetic algorithm to find the optimal solution for the TSP problem
 
         Returns:
@@ -25,7 +28,15 @@ class GeneticTrainer:
         outputs = {}
         population = self.initial_population()
         for i in range(0, self.config.n_generations):
-            self._log(i, population)
+            if i % self.config.log_interval == 0:
+                fitness = self.total_dist_individual(self.best_individual(population))
+                self._log(i, population, fitness)
+                if fitness <= stop_threshold:
+                    log_info(
+                        "Stopping early as the stop threshold is reached at generation %d",
+                        i,
+                    )
+                    break
             fitness_probs = self.fitness_prob(population)
             parents_list = self.draw_parents(population, fitness_probs)
             offspring_list = self.create_offspring(parents_list)
@@ -239,16 +250,16 @@ class GeneticTrainer:
         city_coords = self.config.city_coords
         return euclidean_distance(city_coords[city_1], city_coords[city_2])
 
-    def _log(self, n_generation, population):
+    def _log(self, n_generation, population, fitness):
         """Logging the information to tensorboard
 
         Args:
             n_generation: Current generation number
             population: Population of individuals
+            fitness: Fitness of the best individual
         """
-        if n_generation % self.config.log_interval == 0:
-            fitness = self.total_dist_individual(self.best_individual(population))
-            log_info("Generation: %d, Best fitness: %.2f", n_generation, fitness)
+        log_info("Generation: %d, Best fitness: %.2f", n_generation, fitness)
+        if self.whenever_log_to_tb:
             self.writer.add_scalar("fitness", fitness, n_generation)
             route_plot = plot_route(
                 self.config,

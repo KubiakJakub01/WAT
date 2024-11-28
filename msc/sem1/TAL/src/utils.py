@@ -96,4 +96,6 @@ def plot_route(
     plt.xlabel("X")
     plt.ylabel("Y")
     plt.grid(color="k", linestyle="dotted")
-    return fig_to_numpy(fig)
+    data = fig_to_numpy(fig)
+    plt.close()
+    return data
