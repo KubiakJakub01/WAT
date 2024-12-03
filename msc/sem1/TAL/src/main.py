@@ -48,7 +48,9 @@ def main():
     )
     log_info("Minimum cost using dynamic programming: %.2f", min_cost)
     log_info("Dynamic programming time taken: %.2f seconds", run_time)
-    log_info("Dynamic programming memory usage: %.6f MB", max(mem_usage) - min(mem_usage))
+    log_info(
+        "Dynamic programming memory usage: %.6f MB", max(mem_usage) - min(mem_usage)
+    )
 
     log_info("Starting the genetic algorithm...")
     trainer = GeneticTrainer(config)
