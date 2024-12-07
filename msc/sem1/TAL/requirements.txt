@@ -3,3 +3,4 @@ geonamescache==2.0.0
 numpy==2.0.2
 matplotlib==3.9.2
 memory-profiler==0.61.0
+torch==2.5.1+cpu
