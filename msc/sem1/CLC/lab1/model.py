@@ -1,7 +1,5 @@
 """Database model and CRUD operations"""
 
-from datetime import datetime
-
 from database import Base
 from pydantic import BaseModel, ValidationError
 from sqlalchemy import Column, Float, Integer, String

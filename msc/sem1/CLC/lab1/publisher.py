@@ -11,9 +11,9 @@ import paho.mqtt.client as mqtt
 
 
 # Init three topics
-TOPIC_1 = "sensor/home/temperature"
-TOPIC_2 = "sensor/home/humidity"
-TOPIC_3 = "sensor/office/pressure"
+TOPIC_1 = "home/temperature/bedroom"
+TOPIC_2 = "factory/machine/alerts"
+TOPIC_3 = "bank/transaction/updates"
 TOPICS = [TOPIC_1, TOPIC_2, TOPIC_3]
 BROKER_HOST = "broker.hivemq.com"
 BROKER_PORT = 1883
@@ -47,16 +47,16 @@ def run_publishers():
 
     # Publish some random messages in a loop
     while True:
-        temerature = uniform(15, 25)
-        humidity = uniform(30, 60)
-        pressure = uniform(1000, 1020)
-        publisher1.publish(temerature)
-        publisher2.publish(humidity)
-        publisher3.publish(pressure)
+        topic_1_data = round(uniform(15, 25), 2)
+        topic_2_data = round(uniform(0, 100), 2)
+        topic_3_data = round(uniform(10.0, 1000.0), 2)
+        publisher1.publish(topic_1_data)
+        publisher2.publish(topic_2_data)
+        publisher3.publish(topic_3_data)
 
-        print(f"Published {temerature} to {TOPIC_1}")
-        print(f"Published {humidity} to {TOPIC_2}")
-        print(f"Published {pressure} to {TOPIC_3}")
+        print(f"Published {topic_1_data} to {TOPIC_1}")
+        print(f"Published {topic_2_data} to {TOPIC_2}")
+        print(f"Published {topic_3_data} to {TOPIC_3}")
 
         time.sleep(randint(1, 5))
 
