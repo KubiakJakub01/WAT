@@ -3,10 +3,10 @@ from datetime import datetime
 
 from database import Base
 from pydantic import BaseModel, ValidationError
-from sqlalchemy import Column, DateTime, Float, Integer, String
+from sqlalchemy import Column, Float, Integer, String
 from sqlalchemy.orm import Session
 
-from .publisher import TOPICS
+from publisher import TOPICS
 
 
 class Item(Base):
@@ -15,10 +15,8 @@ class Item(Base):
     id = Column(Integer, primary_key=True, index=True)
     topic = Column(String, index=True)
     value = Column(Float)
-    added_at = Column(DateTime)
 
     def __post_init__(self):
-        self.added_at = datetime.now()
         if self.topic not in TOPICS:
             raise ValidationError(f'Invalid topic: {self.topic}')
 
@@ -26,6 +24,15 @@ class Item(Base):
 class ItemCreate(BaseModel):
     topic: str
     value: float
+
+
+class ItemResponse(BaseModel):
+    id: int
+    topic: str
+    value: float
+
+    class Config:
+        orm_mode = True
 
 
 def get_item(db: Session, item_id: int):

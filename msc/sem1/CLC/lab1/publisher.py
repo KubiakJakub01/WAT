@@ -14,6 +14,8 @@ TOPIC_1 = 'sensor/home/temperature'
 TOPIC_2 = 'sensor/home/humidity'
 TOPIC_3 = 'sensor/office/pressure'
 TOPICS = [TOPIC_1, TOPIC_2, TOPIC_3]
+BROKER_HOST = 'broker.hivemq.com'
+BROKER_PORT = 1883
 
 
 class Publisher:
@@ -37,9 +39,9 @@ class Publisher:
 
 def run_publishers():
     # Create and start publishers
-    publisher1 = Publisher('localhost', 1883, TOPIC_1, qos=0)
-    publisher2 = Publisher('localhost', 1883, TOPIC_2, qos=1)
-    publisher3 = Publisher('localhost', 1883, TOPIC_3, qos=2)
+    publisher1 = Publisher(BROKER_HOST, BROKER_PORT, TOPIC_1, qos=0)
+    publisher2 = Publisher(BROKER_HOST, BROKER_PORT, TOPIC_2, qos=1)
+    publisher3 = Publisher(BROKER_HOST, BROKER_PORT, TOPIC_3, qos=2)
 
     # Publish some random messages in a loop
     while True:

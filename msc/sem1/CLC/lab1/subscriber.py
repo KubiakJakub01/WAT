@@ -7,7 +7,9 @@ import threading
 
 import paho.mqtt.client as mqtt
 
-from .publisher import TOPIC_1, TOPIC_2, TOPIC_3
+from model import ItemCreate, create_item
+from publisher import TOPIC_1, TOPIC_2, TOPIC_3, BROKER_HOST, BROKER_PORT
+from database import get_db
 
 
 class Subscriber:
@@ -32,6 +34,19 @@ class Subscriber:
         '''On message callback'''
         print(f'Subscriber {self} got message {msg.payload} for topic {msg.topic}')
         self.data[msg.topic] = msg.payload.decode()
+        self.save_message_to_db(msg.topic, float(msg.payload.decode()))
+
+    def save_message_to_db(self, topic, value):
+        '''Save message to database directly'''
+        db = next(get_db())
+        item = ItemCreate(topic=topic, value=value)
+        try:
+            create_item(db, item)
+            print(f"Message saved to database: {item}")
+        except Exception as e:
+            print(f"Failed to save message to database: {e}")
+        finally:
+            db.close()
 
     def start(self):
         '''Starts the subscriber'''
@@ -55,9 +70,9 @@ def run_subscriber(host, port, topic, qos=0):
 
 def run_subscribers():
     # Run subscribers in separate threads
-    subscriber1 = threading.Thread(target=run_subscriber, args=('localhost', 1883, TOPIC_1, 0))
-    subscriber2 = threading.Thread(target=run_subscriber, args=('localhost', 1883, TOPIC_2, 1))
-    subscriber3 = threading.Thread(target=run_subscriber, args=('localhost', 1883, TOPIC_3, 2))
+    subscriber1 = threading.Thread(target=run_subscriber, args=(BROKER_HOST, BROKER_PORT, TOPIC_1, 0))
+    subscriber2 = threading.Thread(target=run_subscriber, args=(BROKER_HOST, BROKER_PORT, TOPIC_2, 1))
+    subscriber3 = threading.Thread(target=run_subscriber, args=(BROKER_HOST, BROKER_PORT, TOPIC_3, 2))
     subscriber1.start()
     subscriber2.start()
     subscriber3.start()
