@@ -1,8 +1,9 @@
-'''Subscriber module
+"""Subscriber module
 
 Run with:
     python subscriber.py
-'''
+"""
+
 import threading
 
 import paho.mqtt.client as mqtt
@@ -13,7 +14,8 @@ from database import get_db
 
 
 class Subscriber:
-    '''Subscriber class for paho-mqtt'''
+    """Subscriber class for paho-mqtt"""
+
     def __init__(self, host, port, topic, qos=0):
         self.host = host
         self.port = port
@@ -26,18 +28,18 @@ class Subscriber:
         self.data = {}
 
     def on_connect(self, client, userdata, flags, rc):
-        '''On connect callback'''
-        print(f'Subscriber {self} connected with result code {rc}')
+        """On connect callback"""
+        print(f"Subscriber {self} connected with result code {rc}")
         self.client.subscribe(self.topic, qos=self.qos)
 
     def on_message(self, client, userdata, msg):
-        '''On message callback'''
-        print(f'Subscriber {self} got message {msg.payload} for topic {msg.topic}')
+        """On message callback"""
+        print(f"Subscriber {self} got message {msg.payload} for topic {msg.topic}")
         self.data[msg.topic] = msg.payload.decode()
         self.save_message_to_db(msg.topic, float(msg.payload.decode()))
 
     def save_message_to_db(self, topic, value):
-        '''Save message to database directly'''
+        """Save message to database directly"""
         db = next(get_db())
         item = ItemCreate(topic=topic, value=value)
         try:
@@ -49,18 +51,18 @@ class Subscriber:
             db.close()
 
     def start(self):
-        '''Starts the subscriber'''
+        """Starts the subscriber"""
         self.client.loop_forever()
 
     def get_data(self, topic):
-        '''Returns the data'''
-        return self.data.get(topic, f'No {topic} data')
+        """Returns the data"""
+        return self.data.get(topic, f"No {topic} data")
 
     def __repr__(self) -> str:
-        return f'Subscriber(host={self.host}, port={self.port}, topic={self.topic}, qos={self.qos})'
-    
+        return f"Subscriber(host={self.host}, port={self.port}, topic={self.topic}, qos={self.qos})"
+
     def __str__(self) -> str:
-        return f'Subscriber(host={self.host}, port={self.port}, topic={self.topic}, qos={self.qos})'
+        return f"Subscriber(host={self.host}, port={self.port}, topic={self.topic}, qos={self.qos})"
 
 
 def run_subscriber(host, port, topic, qos=0):
@@ -68,11 +70,18 @@ def run_subscriber(host, port, topic, qos=0):
     subscriber = Subscriber(host, port, topic, qos)
     subscriber.start()
 
+
 def run_subscribers():
     # Run subscribers in separate threads
-    subscriber1 = threading.Thread(target=run_subscriber, args=(BROKER_HOST, BROKER_PORT, TOPIC_1, 0))
-    subscriber2 = threading.Thread(target=run_subscriber, args=(BROKER_HOST, BROKER_PORT, TOPIC_2, 1))
-    subscriber3 = threading.Thread(target=run_subscriber, args=(BROKER_HOST, BROKER_PORT, TOPIC_3, 2))
+    subscriber1 = threading.Thread(
+        target=run_subscriber, args=(BROKER_HOST, BROKER_PORT, TOPIC_1, 0)
+    )
+    subscriber2 = threading.Thread(
+        target=run_subscriber, args=(BROKER_HOST, BROKER_PORT, TOPIC_2, 1)
+    )
+    subscriber3 = threading.Thread(
+        target=run_subscriber, args=(BROKER_HOST, BROKER_PORT, TOPIC_3, 2)
+    )
     subscriber1.start()
     subscriber2.start()
     subscriber3.start()

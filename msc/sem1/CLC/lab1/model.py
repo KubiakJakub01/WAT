@@ -1,4 +1,5 @@
-'''Database model and CRUD operations'''
+"""Database model and CRUD operations"""
+
 from datetime import datetime
 
 from database import Base
@@ -10,7 +11,7 @@ from publisher import TOPICS
 
 
 class Item(Base):
-    __tablename__ = 'items'
+    __tablename__ = "items"
 
     id = Column(Integer, primary_key=True, index=True)
     topic = Column(String, index=True)
@@ -18,7 +19,7 @@ class Item(Base):
 
     def __post_init__(self):
         if self.topic not in TOPICS:
-            raise ValidationError(f'Invalid topic: {self.topic}')
+            raise ValidationError(f"Invalid topic: {self.topic}")
 
 
 class ItemCreate(BaseModel):
@@ -65,3 +66,9 @@ def delete_item(db: Session, item_id: int):
     db.delete(db_item)
     db.commit()
     return db_item
+
+
+def clean_db(db: Session):
+    db.query(Item).delete()
+    db.commit()
+    return db.query(Item).all()

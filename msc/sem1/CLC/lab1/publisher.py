@@ -1,8 +1,9 @@
-'''Publisher module
+"""Publisher module
 
 Run with:
     python publisher.py
-'''
+"""
+
 import time
 from random import randint, uniform
 
@@ -10,16 +11,17 @@ import paho.mqtt.client as mqtt
 
 
 # Init three topics
-TOPIC_1 = 'sensor/home/temperature'
-TOPIC_2 = 'sensor/home/humidity'
-TOPIC_3 = 'sensor/office/pressure'
+TOPIC_1 = "sensor/home/temperature"
+TOPIC_2 = "sensor/home/humidity"
+TOPIC_3 = "sensor/office/pressure"
 TOPICS = [TOPIC_1, TOPIC_2, TOPIC_3]
-BROKER_HOST = 'broker.hivemq.com'
+BROKER_HOST = "broker.hivemq.com"
 BROKER_PORT = 1883
 
 
 class Publisher:
-    '''Publisher class for paho-mqtt'''
+    """Publisher class for paho-mqtt"""
+
     def __init__(self, host, port, topic, qos=0):
         self.host = host
         self.port = port
@@ -29,11 +31,11 @@ class Publisher:
         self.client.connect(self.host, self.port)
 
     def publish(self, message):
-        '''Publishes message to topic'''
+        """Publishes message to topic"""
         self.client.publish(self.topic, qos=self.qos, payload=message)
 
     def start(self):
-        '''Starts the publisher'''
+        """Starts the publisher"""
         self.client.loop_forever()
 
 
@@ -52,9 +54,9 @@ def run_publishers():
         publisher2.publish(humidity)
         publisher3.publish(pressure)
 
-        print(f'Published {temerature} to {TOPIC_1}')
-        print(f'Published {humidity} to {TOPIC_2}')
-        print(f'Published {pressure} to {TOPIC_3}')
+        print(f"Published {temerature} to {TOPIC_1}")
+        print(f"Published {humidity} to {TOPIC_2}")
+        print(f"Published {pressure} to {TOPIC_3}")
 
         time.sleep(randint(1, 5))
 
