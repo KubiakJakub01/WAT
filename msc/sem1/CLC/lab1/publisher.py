@@ -13,6 +13,7 @@ import paho.mqtt.client as mqtt
 TOPIC_1 = 'sensor/home/temperature'
 TOPIC_2 = 'sensor/home/humidity'
 TOPIC_3 = 'sensor/office/pressure'
+TOPICS = [TOPIC_1, TOPIC_2, TOPIC_3]
 
 
 class Publisher:

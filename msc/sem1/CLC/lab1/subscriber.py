@@ -7,7 +7,7 @@ import threading
 
 import paho.mqtt.client as mqtt
 
-from publisher import TOPIC_1, TOPIC_2, TOPIC_3
+from .publisher import TOPIC_1, TOPIC_2, TOPIC_3
 
 
 class Subscriber:

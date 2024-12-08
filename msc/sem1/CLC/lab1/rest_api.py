@@ -1,47 +1,20 @@
-'''Rest api using FastApi
+import uvicorn
+from fastapi import Depends, FastAPI
+from sqlalchemy.orm import Session
 
-Run with:
-    uvicorn rest_api:app --reload
-'''
-import csv
-
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from .database import Base, SessionLocal, engine
+from .model import Item, ItemCreate, create_item
 
 app = FastAPI()
 
-TSV_FILE = 'data.tsv'
+Base.metadata.create_all(bind=engine)
 
-class Item(BaseModel):
-    '''Item model'''
-    id: int
-    name: str
-    value: float
-
-    class Config:
-        json_schema_extra = {
-            'example': {
-                'id': 1,
-                'name': 'Sample Item',
-                'value': 10.99
-            }
-        }
-
-
-def read_data():
-    '''Function to read data from TSV file'''
-    with open(TSV_FILE, mode='r', newline='') as file:
-        reader = csv.DictReader(file, delimiter='\t')
-        return [Item(**row) for row in reader]
-
-
-def write_data(items):
-    '''Function to write data to TSV file'''
-    with open(TSV_FILE, mode='w', newline='') as file:
-        writer = csv.DictWriter(file, fieldnames=['id', 'name', 'value'], delimiter='\t')
-        writer.writeheader()
-        for item in items:
-            writer.writerow(item.dict())
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
 @app.get('/')
@@ -51,51 +24,16 @@ async def root():
 
 
 @app.get('/items', response_model=list[Item])
-async def get_items():
+async def get_items(db: Session = Depends(get_db)):
     '''GET method to retrieve all entries'''
-    return read_data()
-
-
-@app.get('/items/{item_id}', response_model=Item)
-async def get_item(item_id: int):
-    '''GET method to retrieve a specific entry'''
-    items = read_data()
-    item = next((item for item in items if item.id == item_id), None)
-    if item:
-        return item
-    raise HTTPException(status_code=404, detail='Item not found')
+    return db.query(Item).all()
 
 
 @app.post('/items', response_model=Item)
-async def add_item(item: Item):
-    '''POST method to add a new entry'''
-    items = read_data()
-    if any(existing_item.id == item.id for existing_item in items):
-        raise HTTPException(status_code=400, detail='Item with this ID already exists')
-    items.append(item)
-    write_data(items)
-    return item
+async def create_new_item(item: ItemCreate, db: Session = Depends(get_db)):
+    '''POST method to create a new item'''
+    return create_item(db, item)
 
 
-@app.put('/items/{item_id}', response_model=Item)
-async def update_item(item_id: int, updated_item: Item):
-    '''PUT method to update an existing entry'''
-    items = read_data()
-    for idx, item in enumerate(items):
-        if item.id == item_id:
-            items[idx] = updated_item
-            write_data(items)
-            return updated_item
-    raise HTTPException(status_code=404, detail='Item not found')
-
-
-@app.delete('/items/{item_id}')
-async def delete_item(item_id: int):
-    '''DELETE method to delete an existing entry'''
-    items = read_data()
-    for idx, item in enumerate(items):
-        if item.id == item_id:
-            del items[idx]
-            write_data(items)
-            return {'message': 'Item deleted'}
-    raise HTTPException(status_code=404, detail='Item not found')
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
