@@ -1,0 +1,25 @@
+version: '3'
+services:
+  mqtt-broker:
+    image: eclipse-mosquitto
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+
+  fastapi-service:
+    build: ./fastapi
+    ports:
+      - "8000:8000"
+
+  fastapi-mqtt:
+    build: ./fastapi_mqtt
+    depends_on:
+      - fastapi-service
+      - mqtt-broker
+
+  mqtt-client:
+    build: ./mqtt_client
+    depends_on:
+      - mqtt-broker
