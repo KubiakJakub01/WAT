@@ -1,4 +1,5 @@
-'''Application for the RaspberryPi Sense HAT'''
+"""Application for the RaspberryPi Sense HAT"""
+
 import json
 import time
 
@@ -8,7 +9,7 @@ sense = SenseHat()
 
 
 def read_sensors():
-    '''Reads all sensors and returns a dictionary'''
+    """Reads all sensors and returns a dictionary"""
     temp = sense.get_temperature()
     humidity = sense.get_humidity()
     pressure = sense.get_pressure()
@@ -24,14 +25,14 @@ def read_sensors():
         "Orientation": orientation,
         "Accelerometer": accelerometer,
         "Gyroscope": gyro,
-        "Magnetometer": mag
+        "Magnetometer": mag,
     }
 
     return sensor_data
 
 
 def display_message(message):
-    '''Displays a message on the LED matrix'''
+    """Displays a message on the LED matrix"""
     sense.show_message(message, scroll_speed=0.05)
 
 
