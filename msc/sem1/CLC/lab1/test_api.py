@@ -1,3 +1,5 @@
+"""Test API for the publisher service."""
+
 import random
 
 import requests
