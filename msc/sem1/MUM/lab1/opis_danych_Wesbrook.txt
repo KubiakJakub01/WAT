@@ -1,0 +1,127 @@
+Zmienna
+
+Znaczenie
+
+ATHLETICS
+
+Udział w zajęciach sportowych
+
+AVE_INC
+
+Średni dochód według regionów
+
+BIGBLOCK
+
+Udział w programie BIGBLOCK
+
+CHILD
+
+Dziecko absolwenta UBC
+
+CNDN_PCT
+
+% obywateli kanadyjskich w regionie.
+
+DEPT1
+
+Kod wydziału , dla pierwszego stopnia uzyskanego w UBC
+
+DWEL_VAL
+
+Średnia wartość mieszkania według regionów
+
+EA
+
+Kod regionu
+
+ENG_PCT
+
+% osób dla których angielski jest pierwszym językiem w regionie
+
+FACSTAFF
+
+Czy pracownik UBC ?
+
+FACULTY1
+
+Kod wydziału dla pierwszego stopnia uzyskanego w UBC
+
+FRSTYEAR
+
+Najwcześniejszy rok uzyskania stopnia w UBC
+
+GRADYR1
+
+Rok uzyskania ostatniego stopnia w UBC
+
+HH_1PER
+
+% gospodarstw jednoosobowych w regionie
+
+HH_2PER
+
+% gospodarstw dwuosobowych w regionie
+
+HH_3PER
+
+% gospodarstw trzyosobowych w regionie
+
+HH_45PER
+
+% gospodarstw 4-5 osobowych w regionie
+
+ID
+
+Kod identyfikacyjny
+
+INDUPD
+
+Data ostatniej aktualizacji danych personalnych
+
+MAJOR1
+
+Kod przedmiotu kierunkowego pierwszego stopnia UBC
+
+MARTIAL
+
+Stan cywilny
+
+MOV_DVEL
+
+% gospodarstw w regionie mieszkających w przyczepach.
+
+OTHERACT
+
+Udział w innych zajęciach
+
+OWN_PCT
+
+% gospodarstw w regionie posiadających własne mieszkanie
+
+PARENT
+
+Rodzic studenta UBC
+
+PROV
+
+Dwuznakowy kod prowincji
+
+SD_INC
+
+Odchylenie standardowe dla dochodów w regionie
+
+SEX
+
+Płeć
+
+SPOUSE
+
+Małżonek studenta albo absolwenta UBC
+
+TOTLGIVE
+
+Całkowita kwota dotacji
+
+WESBROOK
+
+Czy dotacja w ubiegłym roku była większa niż 1000$
