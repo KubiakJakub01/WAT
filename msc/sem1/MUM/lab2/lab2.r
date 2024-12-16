@@ -4,7 +4,6 @@ library(corrplot)
 library(ggplot2)
 library(dplyr)
 
-
 # Załadowanie danych
 day_data <- read.csv("bike-sharing-dataset/day.csv")
 hour_data <- read.csv("bike-sharing-dataset/hour.csv")
