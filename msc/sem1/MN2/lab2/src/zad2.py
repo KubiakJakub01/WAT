@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Cubic Spline Interpolation")
+    parser = argparse.ArgumentParser(description="Cubic and Linear Spline Interpolation")
     parser.add_argument(
         "--data_fp",
         type=Path,
@@ -31,19 +31,51 @@ def parse_args():
         default="outputs/zad2/plot.png",
         help="Path to the output plot file",
     )
+    parser.add_argument(
+        "--fourier_plot_fp",
+        type=Path,
+        default="outputs/zad2/fourier_plot.png",
+        help="Path to the Fourier interpolation plot file",
+    )
     return parser.parse_args()
 
 
+def linear_spline(theta, r, theta_points):
+    """Evaluate linear spline interpolation for the given theta points."""
+    results = []
+    for theta_val in theta_points:
+        for i in range(len(theta) - 1):
+            if theta[i] <= theta_val <= theta[i + 1]:
+                t = (theta_val - theta[i]) / (theta[i + 1] - theta[i])
+                interpolated_val = (1 - t) * r[i] + t * r[i + 1]
+                results.append(interpolated_val)
+                break
+    return np.array(results)
+
+
+def fourier_coefficients(theta, r, n_terms):
+    """Calculate Fourier coefficients for the given data."""
+    a0 = (1 / len(theta)) * np.sum(r)
+    a = []
+    b = []
+    for n in range(1, n_terms + 1):
+        an = (2 / len(theta)) * np.sum(r * np.cos(n * theta))
+        bn = (2 / len(theta)) * np.sum(r * np.sin(n * theta))
+        a.append(an)
+        b.append(bn)
+    return a0, np.array(a), np.array(b)
+
+
+def evaluate_fourier(a0, a_coeffs, b_coeffs, theta_points):
+    """Evaluate Fourier series interpolation for the given theta points."""
+    result = np.full_like(theta_points, a0)
+    for n in range(1, len(a_coeffs) + 1):
+        result += a_coeffs[n - 1] * np.cos(n * theta_points) + b_coeffs[n - 1] * np.sin(n * theta_points)
+    return result
+
+
 def cubic_spline(theta, r):
-    """Calculate coefficients for cubic spline interpolation.
-
-    Args:
-        theta (np.array): Array of theta values.
-        r (np.array): Array of r(theta) values.
-
-    Returns:
-        tuple: Tuple containing coefficients a, b, c, d and h.
-    """
+    """Calculate coefficients for cubic spline interpolation."""
     n = len(theta)
 
     h = [theta[i + 1] - theta[i] for i in range(n - 1)]
@@ -74,19 +106,7 @@ def cubic_spline(theta, r):
 
 
 def evaluate_spline(a, b, c, d, theta, theta_points):
-    """Evaluate cubic spline interpolation for the given theta points.
-
-    Args:
-        a (np.array): Array of a coefficients.
-        b (np.array): Array of b coefficients.
-        c (np.array): Array of c coefficients.
-        d (np.array): Array of d coefficients.
-        theta (np.array): Array of theta values.
-        theta_points (np.array): Array of theta points to evaluate.
-
-    Returns:
-        np.array: Array of interpolated r(theta) values.
-    """
+    """Evaluate cubic spline interpolation for the given theta points."""
     results = []
     for theta_val in theta_points:
         for i in range(len(theta) - 1):
@@ -99,19 +119,7 @@ def evaluate_spline(a, b, c, d, theta, theta_points):
 
 
 def calculate_deviation(theta, r, a, b, c, d):
-    """Calculate deviations between linear and cubic spline interpolation.
-
-    Args:
-        theta (np.array): Array of theta values.
-        r (np.array): Array of r(theta) values.
-        a (np.array): Array of a coefficients.
-        b (np.array): Array of b coefficients.
-        c (np.array): Array of c coefficients.
-        d (np.array): Array of d coefficients.
-
-    Returns:
-        list: List of tuples containing interval and max deviation.
-    """
+    """Calculate deviations between linear and cubic spline interpolation."""
     deviations = []
     for i in range(len(theta) - 1):
         linear_interp = np.linspace(r[i], r[i + 1], 100)
@@ -126,13 +134,7 @@ def calculate_deviation(theta, r, a, b, c, d):
 
 
 def load_data(data_fp):
-    """Load data from the given CSV file.
-
-    Args:
-        data_fp (str): Path to the input CSV file.
-
-    Returns:
-        tuple: Tuple containing theta and r values."""
+    """Load data from the given CSV file."""
     data = np.loadtxt(data_fp, delimiter=",")
     theta = data[:, 0]
     r = data[:, 1]
@@ -140,70 +142,57 @@ def load_data(data_fp):
 
 
 def save_interpolated_data(new_theta, new_r, output_fp):
-    """Save interpolated data to the given CSV file.
-
-    Args:
-        new_theta (np.array): Array of new theta values.
-        new_r (np.array): Array of new r(theta) values.
-        output_fp (str): Path to the output CSV file.
-    """
+    """Save interpolated data to the given CSV file."""
     interpolated_data = np.column_stack((new_theta, new_r))
     output_fp.parent.mkdir(parents=True, exist_ok=True)
     np.savetxt(output_fp, interpolated_data, delimiter=",", fmt="%g")
 
 
 def display_max_deviation_table(max_deviation_table, output_fp):
-    """Display the max deviation table.
-
-    Args:
-        max_deviation_table (list): List of tuples containing interval and max deviation.
-        output_fp (str): Path to the output max deviation table file.
-    """
+    """Display the max deviation table."""
     print("Max Deviation Table:")
-    print("Interval (θ_i, θ_{i+1}) | Max Deviation")
+    print("Interval (\u03b8_i, \u03b8_{i+1}) | Max Deviation")
     for entry in max_deviation_table:
         print(f"[{entry[0]:.2f}, {entry[1]:.2f}] | {entry[2]:.6f}")
 
     output_fp.parent.mkdir(parents=True, exist_ok=True)
     with open(output_fp, "w") as f:
-        f.write("Interval (θ_i, θ_{i+1}),Max Deviation\n")
+        f.write("Interval (\u03b8_i, \u03b8_{i+1}),Max Deviation\n")
         for entry in max_deviation_table:
             f.write(f"[{entry[0]:.2f}, {entry[1]:.2f}],{entry[2]:.6f}\n")
 
 
-def plot_data(theta, r, new_theta, new_r, extended_theta, extended_r, output_fp):
-    """Plot the original and interpolated data with extended interpolation.
-
-    Args:
-        theta (np.array): Array of theta values.
-        r (np.array): Array of r(theta) values.
-        new_theta (np.array): Array of new theta values for [0, π/4].
-        new_r (np.array): Array of new r(theta) values for [0, π/4].
-        extended_theta (np.array): Array of theta values for the full interpolation.
-        extended_r (np.array): Array of r(theta) values for the full interpolation.
-        output_fp (str): Path to the output plot file.
-    """
+def plot_interpolations(theta, r, theta_points, fourier_r, cubic_r, linear_r, output_fp):
+    """Plot Fourier, cubic spline, and linear spline interpolations along with original data."""
     plt.figure(figsize=(10, 6))
     plt.plot(theta, r, "o", label="Original Data", markersize=8)
     plt.plot(
-        extended_theta,
-        extended_r,
+        theta_points,
+        fourier_r,
         "-",
-        label="Cubic Spline (Full Range)",
+        label="Fourier Interpolation",
         color="blue",
         linewidth=2,
     )
     plt.plot(
-        new_theta,
-        new_r,
+        theta_points,
+        cubic_r,
         "-",
-        label="Cubic Spline [0, π/4]",
+        label="Cubic Spline Interpolation",
         color="orange",
+        linewidth=2,
+    )
+    plt.plot(
+        theta_points,
+        linear_r,
+        "--",
+        label="Linear Spline Interpolation",
+        color="green",
         linewidth=2,
     )
     plt.xlabel("Theta (radians)")
     plt.ylabel("r(Theta)")
-    plt.title("Cubic Spline Interpolation of Polar Data")
+    plt.title("Fourier, Cubic Spline, and Linear Spline Interpolation of Polar Data")
     plt.legend()
     plt.grid(True)
     if output_fp:
@@ -217,11 +206,16 @@ if __name__ == "__main__":
     args = parse_args()
     theta, r = load_data(args.data_fp)
     a, b, c, d, h = cubic_spline(theta, r)
-    new_theta = np.arange(0, np.pi / 4, 0.05)
-    new_r = evaluate_spline(a, b, c, d, theta, new_theta)
     extended_theta = np.linspace(np.min(theta), np.max(theta), 500)
-    extended_r = evaluate_spline(a, b, c, d, theta, extended_theta)
-    save_interpolated_data(new_theta, new_r, args.output_fp)
+    new_r_cubic = evaluate_spline(a, b, c, d, theta, extended_theta)
+    new_r_linear = linear_spline(theta, r, extended_theta)
+    a0, a_coeffs, b_coeffs = fourier_coefficients(theta, r, n_terms=5)
+    print("Fourier Coefficients:")
+    print(f"a0: {a0}")
+    print(f"a: {a_coeffs}")
+    print(f"b: {b_coeffs}")
+    fourier_r = evaluate_fourier(a0, a_coeffs, b_coeffs, extended_theta)
     max_deviation_table = calculate_deviation(theta, r, a, b, c, d)
+    save_interpolated_data(extended_theta, new_r_cubic, args.output_fp)
     display_max_deviation_table(max_deviation_table, args.table_fp)
-    plot_data(theta, r, new_theta, new_r, extended_theta, extended_r, args.plot_fp)
+    plot_interpolations(theta, r, extended_theta, fourier_r, new_r_cubic, new_r_linear, args.plot_fp)
