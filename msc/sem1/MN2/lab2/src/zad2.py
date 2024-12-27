@@ -6,7 +6,9 @@ import matplotlib.pyplot as plt
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Cubic and Linear Spline Interpolation")
+    parser = argparse.ArgumentParser(
+        description="Cubic and Linear Spline Interpolation"
+    )
     parser.add_argument(
         "--data_fp",
         type=Path,
@@ -70,7 +72,9 @@ def evaluate_fourier(a0, a_coeffs, b_coeffs, theta_points):
     """Evaluate Fourier series interpolation for the given theta points."""
     result = np.full_like(theta_points, a0)
     for n in range(1, len(a_coeffs) + 1):
-        result += a_coeffs[n - 1] * np.cos(n * theta_points) + b_coeffs[n - 1] * np.sin(n * theta_points)
+        result += a_coeffs[n - 1] * np.cos(n * theta_points) + b_coeffs[n - 1] * np.sin(
+            n * theta_points
+        )
     return result
 
 
@@ -162,7 +166,9 @@ def display_max_deviation_table(max_deviation_table, output_fp):
             f.write(f"[{entry[0]:.2f}, {entry[1]:.2f}],{entry[2]:.6f}\n")
 
 
-def plot_interpolations(theta, r, theta_points, fourier_r, cubic_r, linear_r, output_fp):
+def plot_interpolations(
+    theta, r, theta_points, fourier_r, cubic_r, linear_r, output_fp
+):
     """Plot Fourier, cubic spline, and linear spline interpolations along with original data."""
     plt.figure(figsize=(10, 6))
     plt.plot(theta, r, "o", label="Original Data", markersize=8)
@@ -218,4 +224,6 @@ if __name__ == "__main__":
     max_deviation_table = calculate_deviation(theta, r, a, b, c, d)
     save_interpolated_data(extended_theta, new_r_cubic, args.output_fp)
     display_max_deviation_table(max_deviation_table, args.table_fp)
-    plot_interpolations(theta, r, extended_theta, fourier_r, new_r_cubic, new_r_linear, args.plot_fp)
+    plot_interpolations(
+        theta, r, extended_theta, fourier_r, new_r_cubic, new_r_linear, args.plot_fp
+    )
