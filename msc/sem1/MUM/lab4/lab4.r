@@ -97,6 +97,8 @@ wesbrook2 <- wesbrook2 %>%
 # Kodowanie zero jedynkowe zmiennych typu factor
 #-------------------------------------------------------
 
+library(dummies)
+
 wesbrook2 <- data.frame(wesbrook2)
 
 # Podgląd statystyk opisowych
@@ -123,8 +125,8 @@ knn_wesbrook2 <- wesbrook2 %>% select(-WESBROOK)
 set.seed(123)
 sample_index <-
   sample(nrow(knn_wesbrook2), round(nrow(knn_wesbrook2) * .75), replace = FALSE)
-knn_wesbrook_train <- knn_wesbrook2[sample_index,]
-knn_wesbrook_test <- knn_wesbrook2[-sample_index,]
+knn_wesbrook_train <- na.omit(knn_wesbrook2[sample_index, ])
+knn_wesbrook_test <- na.omit(knn_wesbrook2[-sample_index, ])
 
 wesbrook_labels_train <- as.factor(wesbrook_labels[sample_index, ])
 wesbrook_labels_test <- as.factor(wesbrook_labels[-sample_index, ])
@@ -132,11 +134,12 @@ wesbrook_labels_test <- as.factor(wesbrook_labels[-sample_index, ])
 # Budowa modelu
 
 wesbrook_pred_knn <- knn(
-  train  = knn_wesbrook_train,
+  train = knn_wesbrook_train,
   test = knn_wesbrook_test,
   cl = wesbrook_labels_train,
   k = 20
 )
+
 
 #-----------------------------------------------------------------------
 #           Budowa modelu BayesNK
@@ -151,8 +154,8 @@ wesbrook_test <- wesbrook2[-sample_index,]
 
 # Budowa modelu
 
-wesbrook_mod <- naiveBayes(WESBROOK ~ ., data = wesbrook_train, laplace = 1)
-wesbrook_pred_bayes <- predict(wesbrook_mod, wesbrook_test, type = "class")
+wesbrook_bayes <- naiveBayes(WESBROOK ~ ., data = wesbrook_train, laplace = 1)
+wesbrook_pred_bayes <- predict(wesbrook_bayes, wesbrook_test, type = "class")
 
 #------------------------------------------------------------------------
 #                   Drzewa klasyfikacyjne
@@ -169,7 +172,7 @@ wesbrook_dt <-
 wesbrook_pred_dt <- predict(wesbrook_dt, wesbrook_test, type = "class")
 
 #------------------------------------------------------------------------
-#                   Drzewa losowe
+#                   Lasy losowe
 #------------------------------------------------------------------------
 library(randomForest)
 
@@ -232,7 +235,7 @@ wesbrook_svm <- svm(WESBROOK ~ ., data = wesbrook_train, probability = TRUE)
 wesbrook_pred_svm <- predict(wesbrook_svm, wesbrook_test, type = "class")
 
 #--------------------------------------------------------------------------
-#              Ocena Modelu
+#              Macierz pomyłek
 #--------------------------------------------------------------------------
 
 library(caret)
@@ -247,7 +250,7 @@ confusionMatrix(wesbrook_pred_bayes, wesbrook_test$WESBROOK)
 # Drzewa klasyfikacyjne
 confusionMatrix(wesbrook_pred_dt, wesbrook_test$WESBROOK)
 
-# Drzewa losowe
+# Lasy losowe
 confusionMatrix(wesbrook_pred_rf, wesbrook_test$WESBROOK)
 
 # XGBoost
@@ -256,19 +259,221 @@ confusionMatrix(wesbrook_pred_xgb, wesbrook_test$WESBROOK)
 # SVM
 confusionMatrix(wesbrook_pred_svm, wesbrook_test$WESBROOK)
 
-# ROC
+#--------------------------------------------------------------------------
+#              ROC Curve
+#--------------------------------------------------------------------------
 
-# SVN
-wesbrook_pred_svm_p <- predict(wesbrook_svm, wesbrook_test, decision.values = TRUE, probability = TRUE)
+# KNN
+wesbrook_pred_p <- as.numeric(wesbrook_pred_knn) - 1
+roc_pred <- prediction(predictions = wesbrook_pred_p, labels = as.numeric(wesbrook_labels_test) - 1)
+roc_perf <- performance(roc_pred, measure = "tpr", x.measure = "fpr")
+plot(roc_perf, main = "ROC Curve KNN", col = "red", lwd = 3)
+abline(a = 0, b = 1, lwd = 3, lty = 2, col = 1)
+auc_perf <- performance(roc_pred, measure = "auc")
+wesbrook_auc <- unlist(slot(auc_perf, "y.values"))
+wesbrook_auc
 
-wesbrook_pred_svm_p <- attr(wesbrook_pred_svm_p, "probabilities")
-
-roc_pred_svm <-
+# BayesNK
+wesbrook_pred_p <- predict(wesbrook_bayes, wesbrook_test, type = "raw")
+roc_pred <-
   prediction(
-    predictions = wesbrook_pred_svm_p[, "Y"],
+    predictions = wesbrook_pred_p[, "Y"],
     labels = wesbrook_test$WESBROOK
   )
+roc_perf <- performance(roc_pred, measure = "tpr", x.measure = "fpr")
+plot(roc_perf, main = "ROC Curve BayesNK", col = "red", lwd = 3)
+abline(a = 0, b = 1, lwd = 3, lty = 2, col = 1)
+auc_perf <- performance(roc_pred, measure = "auc")
+wesbrook_auc <- unlist(slot(auc_perf, "y.values"))
+wesbrook_auc
 
-# Plotting ROC curve
-roc_perf_svm <- performance(roc_pred_svm, "tpr", "fpr")
-plot(roc_perf_svm, colorize = TRUE)
+# Drzewa klasyfikacyjne
+wesbrook_pred_p <- predict(wesbrook_dt, wesbrook_test, type = "prob")
+roc_pred <-
+  prediction(
+    predictions = wesbrook_pred_p[, "Y"],
+    labels = wesbrook_test$WESBROOK
+  )
+roc_perf <- performance(roc_pred, measure = "tpr", x.measure = "fpr")
+plot(roc_perf, main = "ROC Curve Drzewa klasyfikacyjne", col = "red", lwd = 3)
+abline(a = 0, b = 1, lwd = 3, lty = 2, col = 1)
+auc_perf <- performance(roc_pred, measure = "auc")
+wesbrook_auc <- unlist(slot(auc_perf, "y.values"))
+wesbrook_auc
+
+# Lasy losowe
+wesbrook_pred_p <- predict(wesbrook_rf, wesbrook_test, type = "prob")
+roc_pred <-
+  prediction(
+    predictions = wesbrook_pred_p[, "Y"],
+    labels = wesbrook_test$WESBROOK
+  )
+roc_perf <- performance(roc_pred, measure = "tpr", x.measure = "fpr")
+plot(roc_perf, main = "ROC Curve Lasy losowe", col = "red", lwd = 3)
+abline(a = 0, b = 1, lwd = 3, lty = 2, col = 1)
+auc_perf <- performance(roc_pred, measure = "auc")
+wesbrook_auc <- unlist(slot(auc_perf, "y.values"))
+wesbrook_auc
+
+# XGBoost
+wesbrook_pred_p <- predict(wesbrook_xgb, wesbrook_test, type = "prob")
+roc_pred <-
+  prediction(
+    predictions = wesbrook_pred_p[, "Y"],
+    labels = wesbrook_test$WESBROOK
+  )
+roc_perf <- performance(roc_pred, measure = "tpr", x.measure = "fpr")
+plot(roc_perf, main = "ROC Curve XGBoost", col = "red", lwd = 3)
+abline(a = 0, b = 1, lwd = 3, lty = 2, col = 1)
+auc_perf <- performance(roc_pred, measure = "auc")
+wesbrook_auc <- unlist(slot(auc_perf, "y.values"))
+wesbrook_auc
+
+# SVM
+wesbrook_pred_p <- predict(wesbrook_svm, wesbrook_test, probability = TRUE)
+wesbrook_pred_p <- attr(wesbrook_pred_p, "probabilities")
+roc_pred <-
+  prediction(
+    predictions = wesbrook_pred_p[, "Y"],
+    labels = wesbrook_test$WESBROOK
+  )
+roc_perf <- performance(roc_pred, measure = "tpr", x.measure = "fpr")
+plot(roc_perf, main = "ROC Curve SVM", col = "red", lwd = 3)
+abline(a = 0, b = 1, lwd = 3, lty = 2, col = 1)
+auc_perf <- performance(roc_pred, measure = "auc")
+wesbrook_auc <- unlist(slot(auc_perf, "y.values"))
+wesbrook_auc
+
+#------------------------------------------------------------------------------
+#                   k-krotnej walidacji krzyzowej
+#------------------------------------------------------------------------------
+library(caret)
+
+# Definicja kontroli treningu
+train_control <- trainControl(method = "cv", number = 10)
+
+# KNN
+knn_cv <- train(
+  WESBROOK ~ .,
+  data = wesbrook2,
+  method = "knn",
+  trControl = train_control,
+  tuneGrid = expand.grid(k = 20)
+)
+print(knn_cv)
+
+# Naive Bayes
+bayes_cv <- train(
+  WESBROOK ~ .,
+  data = wesbrook2,
+  method = "nb",
+  trControl = train_control
+)
+print(bayes_cv)
+
+# Drzewa klasyfikacyjne
+dt_cv <- train(
+  WESBROOK ~ .,
+  data = wesbrook2,
+  method = "rpart",
+  trControl = train_control,
+  tuneLength = 10
+)
+print(dt_cv)
+
+# Lasy losowe
+rf_cv <- train(
+  WESBROOK ~ .,
+  data = wesbrook2,
+  method = "rf",
+  trControl = train_control,
+  tuneLength = 10
+)
+print(rf_cv)
+
+# XGBoost
+xgb_cv <- train(
+  WESBROOK ~ .,
+  data = wesbrook2,
+  method = "xgbTree",
+  trControl = train_control,
+  tuneLength = 10
+)
+print(xgb_cv)
+
+# SVM
+svm_cv <- train(
+  WESBROOK ~ .,
+  data = wesbrook2,
+  method = "svmRadial",
+  trControl = train_control,
+  tuneLength = 10
+)
+print(svm_cv)
+
+#----------------------------------------------------------------
+#               Walidacji krzyżowa metoda losowa
+#---------------------------------------------------------------
+library(caret)
+
+# Definicja kontroli treningu dla walidacji krzyżowej metodą losową
+train_control_mc <- trainControl(method = "LGOCV", p = .1, number = 10)
+
+# KNN
+knn_mc <- train(
+  WESBROOK ~ .,
+  data = wesbrook2,
+  method = "knn",
+  trControl = train_control_mc,
+  tuneGrid = expand.grid(k = 20)
+)
+print(knn_mc)
+
+# Naive Bayes
+bayes_mc <- train(
+  WESBROOK ~ .,
+  data = wesbrook2,
+  method = "nb",
+  trControl = train_control_mc
+)
+print(bayes_mc)
+
+# Drzewa klasyfikacyjne
+dt_mc <- train(
+  WESBROOK ~ .,
+  data = wesbrook2,
+  method = "rpart",
+  trControl = train_control_mc,
+  tuneLength = 10
+)
+print(dt_mc)
+
+# Drzewa losowe
+rf_mc <- train(
+  WESBROOK ~ .,
+  data = wesbrook2,
+  method = "rf",
+  trControl = train_control_mc,
+  tuneLength = 10
+)
+print(rf_mc)
+
+# XGBoost
+xgb_mc <- train(
+  WESBROOK ~ .,
+  data = wesbrook2,
+  method = "xgbTree",
+  trControl = train_control_mc,
+  tuneLength = 10
+)
+print(xgb_mc)
+
+# SVM
+svm_mc <- train(
+  WESBROOK ~ .,
+  data = wesbrook2,
+  method = "svmRadial",
+  trControl = train_control_mc,
+  tuneLength = 10
+)
+print(svm_mc)
