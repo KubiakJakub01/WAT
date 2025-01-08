@@ -10,7 +10,6 @@ from random import randint, uniform
 import paho.mqtt.client as mqtt
 
 
-# Init three topics
 TOPIC_1 = "home/temperature/bedroom"
 TOPIC_2 = "factory/machine/alerts"
 TOPIC_3 = "bank/transaction/updates"
@@ -40,12 +39,10 @@ class Publisher:
 
 
 def run_publishers():
-    # Create and start publishers
     publisher1 = Publisher(BROKER_HOST, BROKER_PORT, TOPIC_1, qos=0)
     publisher2 = Publisher(BROKER_HOST, BROKER_PORT, TOPIC_2, qos=1)
     publisher3 = Publisher(BROKER_HOST, BROKER_PORT, TOPIC_3, qos=2)
 
-    # Publish some random messages in a loop
     while True:
         topic_1_data = round(uniform(15, 25), 2)
         topic_2_data = round(uniform(0, 100), 2)
