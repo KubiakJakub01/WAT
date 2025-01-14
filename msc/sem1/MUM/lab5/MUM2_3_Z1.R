@@ -1,19 +1,75 @@
 # Generowanie regul asocjacyjnych
 
-# Zaimportowac zbiór danych groceries,csv
+# Zaimportowac zbiï¿½r danych groceries,csv
 
-library(arules)
-
-groceries <- read.transactions("http://jolej.linuxpl.info/groceries.csv", sep = ",")
-
-# Zbiór danych sklada sie z 9835 transakcji odnotowanych w ciagu miesiaca w malym sklepie 
+# Zbiï¿½r danych sklada sie z 9835 transakcji odnotowanych w ciagu miesiaca w malym sklepie 
 # spozywczym.
 # Ma podobna strukture co przedstawione wczesniej dane z belgijskiego supermarketu
-# z dwoma podstawowymi róznicami. Pierwsza jest to, ze w odróznieniu od zbioru danych
-# z supermarketu, w którym elementy byly oddzielone bialymi znakami, elementy
-# w tym zbiorze danych sa rozdzielone przecinkiem. Druga róznica polega na tym,
+# z dwoma podstawowymi rï¿½znicami. Pierwsza jest to, ze w odrï¿½znieniu od zbioru danych
+# z supermarketu, w ktï¿½rym elementy byly oddzielone bialymi znakami, elementy
+# w tym zbiorze danych sa rozdzielone przecinkiem. Druga rï¿½znica polega na tym,
 # ze elementy w tym zbiorze danych nie zostaly zanonimizowane. Tym razem widac,
-# jaki produkt reprezentuje kazdy z elementów. 
+# jaki produkt reprezentuje kazdy z elementï¿½w. 
 # 
 # Zadamie polega na wygenerowaniu regul
-# asocjacyjnych, które opisuja interesujace wzorce zakupowe w danych.
+# asocjacyjnych, ktï¿½re opisuja interesujace wzorce zakupowe w danych.
+
+
+#----------------------------------------------------------------------------
+#          Tworzenie reguÅ‚ asocjacyjnych dla zbioru "groceries"
+#---------------------------------------------------------------------------
+
+library(arules)
+library(tidyverse)
+
+# Wczytanie i inspekcja danych
+groceries <- read.transactions("http://jolej.linuxpl.info/groceries.csv", sep = ",")
+
+summary(groceries)
+inspect(groceries[1:5])
+itemFrequency(groceries[, "whole milk"])
+
+# Sprawdzenie czÄ™stoÅ›ci wystÄ™powania produktÃ³w
+groceries_frequency <- tibble(
+  Items     = names(itemFrequency(groceries)),
+  Frequency = itemFrequency(groceries)
+)
+head(groceries_frequency)
+
+# 10 najczÄ™Å›ciej kupowanych produktÃ³w
+groceries_frequency %>%
+  arrange(desc(Frequency)) %>%
+  slice(1:10)
+
+#----------------------------------------------------------------------------
+#          Ustalanie parametrÃ³w modelu
+#---------------------------------------------------------------------------
+min_support <- (30 * 3) / 9835
+min_support
+min_confidence <- 0.5
+min_len <- 2
+
+#----------------------------------------------------------------------------
+#          Generowanie reguÅ‚ przy pomocy algorytmu apriori
+#---------------------------------------------------------------------------
+groceries_rules <- apriori(
+  groceries,
+  parameter = list(
+    support   = min_support,
+    confidence = min_confidence,
+    minlen    = min_len
+  )
+)
+summary(groceries_rules)
+inspect(groceries_rules[1:10])
+
+groceries_rules %>%
+  sort(by = "lift") %>%
+  head(n = 10) %>%
+  inspect()
+
+groceries_rules %>%
+  subset(items %in% "whole milk") %>%
+  sort(by = "lift") %>%
+  head(n = 10) %>%
+  inspect()
