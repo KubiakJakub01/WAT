@@ -45,7 +45,7 @@ mallcustomers_scaled <- scale(mallcustomers_subset)
 summary(mallcustomers_scaled)
 
 # -------------------------------------------------------------------------
-#   Klasteryzacja metodą k-średnich
+#   Klasteryzacja metodą k-średnich (k=3)
 # -------------------------------------------------------------------------
 library(stats)
 
@@ -95,3 +95,39 @@ fviz_nbclust(mallcustomers_scaled, kmeans, method = "silhouette") +
 # Statystyka gap
 fviz_nbclust(mallcustomers_scaled, kmeans, method = "gap_stat") +
   ggtitle("Gap Statistic")
+
+# -------------------------------------------------------------------------
+#   Klasteryzacja metodą k-średnich (k=6)
+# -------------------------------------------------------------------------
+library(stats)
+
+set.seed(1234)
+k6 <- kmeans(mallcustomers_scaled, centers = 6, nstart = 25)
+
+# Podstawowe informacje:
+k6$size     # liczba obserwacji w każdym klastrze
+k6$centers  # środki klastrów w przestrzeni standaryzowanej
+k6$withinss # sumy kwadratów odchyleń w obrębie klastrów
+
+mallcustomers %>%
+  mutate(cluster = k6$cluster) %>%
+  group_by(cluster) %>%
+  summarise(
+    avg_income = mean(Income_clean, na.rm = TRUE),
+    avg_spending = mean(SpendingScore, na.rm = TRUE),
+    n = n()
+  )
+
+# -------------------------------------------------------------------------
+#   Wizualizacja klasteryzacji
+# -------------------------------------------------------------------------
+library(factoextra)
+
+fviz_cluster(
+  k6,
+  data = mallcustomers_scaled,
+  geom = "point",
+  ellipse.type = "norm",
+  main = "K-means clustering of Mall Customers (Income vs SpendingScore)",
+  ggtheme = theme_minimal()
+) + theme(text = element_text(size = 14))

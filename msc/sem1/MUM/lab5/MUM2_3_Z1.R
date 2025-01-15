@@ -24,7 +24,6 @@ library(tidyverse)
 
 # Wczytanie i inspekcja danych
 groceries <- read.transactions("http://jolej.linuxpl.info/groceries.csv", sep = ",")
-
 summary(groceries)
 inspect(groceries[1:5])
 itemFrequency(groceries[, "whole milk"])
