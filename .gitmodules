@@ -1,0 +1,6 @@
+[submodule "beng/AM/shop-plan"]
+	path = beng/AM/shop-plan
+	url = git@github.com:KubiakJakub01/shop-plan.git
+[submodule "beng/EDP/event-scheduler"]
+	path = beng/EDP/event-scheduler
+	url = git@github.com:KubiakJakub01/event-scheduler.git
