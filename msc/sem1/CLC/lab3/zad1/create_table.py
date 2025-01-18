@@ -17,9 +17,8 @@ def parse_args():
 
 
 def load_config(config_fp: Path):
-    with open(config_fp, 'r', encoding='utf-8') as f:
+    with open(config_fp, "r", encoding="utf-8") as f:
         return json.load(f)
-
 
 
 def main():
@@ -32,10 +31,7 @@ def main():
 
     try:
         connection = psycopg2.connect(
-            host=host,
-            database=database,
-            user=user,
-            password=password
+            host=host, database=database, user=user, password=password
         )
         cursor = connection.cursor()
 

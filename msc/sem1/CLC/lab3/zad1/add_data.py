@@ -13,23 +13,13 @@ def parse_args():
         default="config.json",
         help="Path to the config file.",
     )
-    parser.add_argument(
-        "--name",
-        type=str,
-        required=True,
-        help="User name to add."
-    )
-    parser.add_argument(
-        "--email",
-        type=str,
-        required=True,
-        help="User email to add."
-    )
+    parser.add_argument("--name", type=str, required=True, help="User name to add.")
+    parser.add_argument("--email", type=str, required=True, help="User email to add.")
     return parser.parse_args()
 
 
 def load_config(config_fp: Path):
-    with open(config_fp, 'r', encoding='utf-8') as f:
+    with open(config_fp, "r", encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -41,20 +31,19 @@ def main():
     user = config["PostgresDB"]["user"]
     password = config["PostgresDB"]["password"]
 
-    # Połączenie z bazą
     try:
         connection = psycopg2.connect(
-            host=host,
-            database=database,
-            user=user,
-            password=password
+            host=host, database=database, user=user, password=password
         )
         print("Połączono z bazą danych!")
 
         cursor = connection.cursor()
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO users (name, email) VALUES (%s, %s)
-        """, (args.name, args.email))
+        """,
+            (args.name, args.email),
+        )
         connection.commit()
         print("Dodano użytkownika!")
 
