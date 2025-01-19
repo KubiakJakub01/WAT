@@ -1,0 +1,51 @@
+version: "3.8"
+
+services:
+  fastapi_app:
+    build: 
+      context: ./fastapi_app
+    container_name: fastapi_app
+    ports:
+      - "8000:80"
+    networks:
+      - mqtt_net
+
+  mqtt_broker:
+    image: eclipse-mosquitto:2.0
+    container_name: mqtt_broker
+    ports:
+      - "1884:1884"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+    networks:
+      - mqtt_net
+
+  mqtt_publisher:
+    build:
+      context: ./mqtt_publisher
+    container_name: mqtt_publisher
+    environment:
+      - MQTT_BROKER=mqtt_broker
+      - MQTT_PORT=1884
+      - MQTT_TOPIC=test/etap2
+    networks:
+      - mqtt_net
+
+  mqtt_subscriber:
+    build:
+      context: ./mqtt_subscriber
+    container_name: mqtt_subscriber
+    environment:
+      - MQTT_BROKER=mqtt_broker
+      - MQTT_PORT=1884
+      - MQTT_TOPIC=test/etap2
+      - FASTAPI_ENDPOINT=/items
+    depends_on:
+      - fastapi_app
+    networks:
+      - mqtt_net
+
+networks:
+  mqtt_net:
+    driver: bridge
