@@ -2,9 +2,16 @@ version: "3.8"
 
 services:
   fastapi_app:
-    build: 
+    build:
       context: ./fastapi_app
     container_name: fastapi_app
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     ports:
       - "8000:80"
     networks:
@@ -15,7 +22,6 @@ services:
     container_name: mqtt_broker
     ports:
       - "1884:1884"
-      - "9001:9001"
     volumes:
       - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
     networks:
@@ -28,7 +34,9 @@ services:
     environment:
       - MQTT_BROKER=mqtt_broker
       - MQTT_PORT=1884
-      - MQTT_TOPIC=test/etap2
+      - MQTT_TOPIC=test/etap3
+    depends_on:
+      - mqtt_broker
     networks:
       - mqtt_net
 
@@ -39,10 +47,25 @@ services:
     environment:
       - MQTT_BROKER=mqtt_broker
       - MQTT_PORT=1884
-      - MQTT_TOPIC=test/etap2
+      - MQTT_TOPIC=test/etap3
+      - FASTAPI_HOST=fastapi_app
+      - FASTAPI_PORT=80
       - FASTAPI_ENDPOINT=/items
     depends_on:
       - fastapi_app
+      - mqtt_broker
+    networks:
+      - mqtt_net
+
+  db:
+    image: postgres:15
+    container_name: postgres_db
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
     networks:
       - mqtt_net
 

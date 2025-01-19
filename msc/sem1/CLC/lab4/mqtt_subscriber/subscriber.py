@@ -22,6 +22,7 @@ def on_connect(client, userdata, flags, rc):
     client.subscribe(MQTT_TOPIC)
     logger.info(f"[SUBSCRIBER] Zasubskrybowano topic: {MQTT_TOPIC}")
 
+
 def on_message(client, userdata, msg):
     payload = msg.payload.decode()
     logger.info(f"[SUBSCRIBER] Otrzymano wiadomość z topica {msg.topic}: {payload}")
@@ -43,6 +44,7 @@ def main():
     client.connect(MQTT_BROKER, MQTT_PORT, 60)
 
     client.loop_forever()
+
 
 if __name__ == "__main__":
     main()
