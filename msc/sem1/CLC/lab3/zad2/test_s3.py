@@ -38,7 +38,7 @@ def test_find_file(file_name):
 
     response = requests.post(API_BASE_URL, auth=auth, json=data)
 
-    print("\nFIND FILE (HEAD) Response:")
+    print("\nFIND FILE (POST) Response:")
     print("Status Code:", response.status_code)
     print("Headers:", response.headers)
     if response.status_code == 200:
