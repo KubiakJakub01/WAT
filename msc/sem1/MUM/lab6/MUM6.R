@@ -8,6 +8,7 @@
 # Załadowanie bibliotek
 library(tidyverse)
 library(caret)
+library(RSNNS)
 library(ROCR)
 
 # Załadowanie zbioru danych
@@ -101,7 +102,11 @@ predicted_nn <- predict(wesbrook_nn, wesbrook_test)
 predicted_nn <- encodeClassLabels(predicted_nn)
 predicted_nn <- factor(predicted_nn, levels = c(1, 2), labels = c("N", "Y"))
 
-confusionMatrix(wesbrook_test$WESBROOK, predicted_nn)
+caret::confusionMatrix(
+  wesbrook_test$WESBROOK,
+  predicted_nn,
+  positive = "Y"
+)
 
 #-----------------------------------------------------------------------
 #           Budowa modelu nnet
@@ -120,7 +125,7 @@ wesbrook_nnet <- nnet(
 predicted_nnet <- predict(wesbrook_nnet, wesbrook_test, type = "class")
 predicted_nnet <- factor(predicted_nnet, levels = c("Y", "N"))
 
-confusionMatrix(predicted_nnet, wesbrook_test$WESBROOK)
+caret::confusionMatrix(predicted_nnet, wesbrook_test$WESBROOK)
 
 #-----------------------------------------------------------------------
 #           Budowa modelu RSNNS
@@ -136,17 +141,56 @@ wesbrook_split <- splitForTrainingAndTest(WE, WY, ratio = 0.3)
 
 # Budowa modelu
 set.seed(123)
-wesbrook_mlp <- mlp(wesbrook_split$inputsTrain, wesbrook_split$targetsTrain, size = 15, learnFuncParams = 0.1, maxit = 50)
+wesbrook_mlp <- mlp(
+  wesbrook_split$inputsTrain,
+  wesbrook_split$targetsTrain,
+  size = 25,
+  learnFuncParams = 0.01,
+  maxit = 100
+)
 
 # Predykcja
 predicted_mlp <- predict(wesbrook_mlp, wesbrook_split$inputsTest)
-predicted_mlp <- round(predicted_mlp, 0)
-predicted_mlp <- factor(encodeClassLabels(predicted_mlp))
-
-length(predicted_mlp)
-length(factor(encodeClassLabels(wesbrook_split$targetsTest)))
-predicted_mlp
-factor(encodeClassLabels(wesbrook_split$targetsTest))
+predicted_mlp <- encodeClassLabels(predicted_mlp)
+predicted_mlp <- factor(predicted_mlp, levels = c(1, 2), labels = c("N", "Y"))
 
 # Ewaluacja
-confusionMatrix(predicted_mlp, factor(encodeClassLabels(wesbrook_split$targetsTest)))
+caret::confusionMatrix(
+  predicted_mlp,
+  factor(encodeClassLabels(wesbrook_split$targetsTest), levels = c(1, 2), labels = c("N", "Y")),
+  positive = "Y"
+)
+
+#--------------------------------------------------------------------------
+#             Szukanie najlepszych parametrów
+#--------------------------------------------------------------------------
+
+set.seed(123)
+
+train_control <- trainControl(
+  method = "cv",
+  number = 5,
+  classProbs = TRUE,
+  summaryFunction = twoClassSummary
+)
+
+grid <- expand.grid(
+  size = c(5, 10, 20, 30),
+  decay = c(1e-4, 5e-4, 1e-3)
+)
+
+wesbrook_nnet_tuned <- caret::train(
+  WESBROOK ~ .,
+  data = wesbrook_train,
+  method = "nnet",
+  trControl = train_control,
+  tuneGrid = grid,
+  metric = "ROC",
+  maxit = 1000,
+  trace = FALSE
+)
+
+print(wesbrook_nnet_tuned$bestTune)
+
+predicted_nnet_tuned <- predict(wesbrook_nnet_tuned, wesbrook_test)
+caret::confusionMatrix(predicted_nnet_tuned, wesbrook_test$WESBROOK)
