@@ -22,11 +22,12 @@ FROM FlightSchedule
 FOR SYSTEM_TIME FROM '2024-06-01' TO '2024-06-30'
 WHERE AircraftID = 1;
 
-/* 4. Future check – flights after the scheduled maintenance window */
-SELECT FlightID, ScheduledDepUTC
-FROM FlightSchedule
-WHERE AircraftID = 1
-  AND ScheduledDepUTC BETWEEN '2024-07-10' AND '2024-07-20';
+/* 4. Future check – flights for AircraftID 1 scheduled (application time) after its A-check window */
+SELECT F.FlightID, F.ScheduledDepUTC, F.Status
+FROM FlightSchedule F
+WHERE F.AircraftID = 1
+  AND F.ScheduledDepUTC > '2024-07-20'
+  AND F.ValidTo = '9999-12-31 23:59:59.9999999';
 
 /* 5. Seat inventory point-in-time: how many Economy seats left right now? */
 SELECT SUM(SeatsLeft) AS EconSeatsUnsold
@@ -104,15 +105,27 @@ FOR SYSTEM_TIME ALL
 WHERE AircraftID = 1
 ORDER BY ValidFrom;
 
-/* 10. "What-if" – Which flights overlap with any 'Unserviceable' period? */
-WITH AllMaintenancePeriods AS (
-    SELECT AircraftID, Status, Note, ValidFrom, ValidTo
+/* 10. "What-if" – Which flights overlap with any 'Unserviceable' period of Aircraft 1? */
+WITH Aircraft1Maintenance AS (
+    SELECT Status, Note, ValidFrom, ValidTo
     FROM MaintenanceStatus FOR SYSTEM_TIME ALL
+    WHERE AircraftID = 1 AND Status = 'Scheduled A-check' AND Note = 'Aircraft unavailable'
 )
-SELECT F.FlightID, F.ScheduledDepUTC, M.Status AS MaintenanceStatus, M.ValidFrom AS MaintenanceStart, M.ValidTo AS MaintenanceEnd
+SELECT F.FlightID, F.ScheduledDepUTC, M.Status AS MaintenanceStatusAtTimeOfCheck, M.ValidFrom AS MaintRecord_ValidFrom, M.ValidTo AS MaintRecord_ValidTo
 FROM FlightSchedule F
-JOIN AllMaintenancePeriods M ON F.AircraftID = M.AircraftID
-WHERE M.Status = 'Scheduled A-check'
-  AND M.Note = 'Aircraft unavailable'
-  AND F.ScheduledDepUTC >= M.ValidFrom AND F.ScheduledDepUTC < M.ValidTo
+CROSS JOIN Aircraft1Maintenance M
+WHERE F.AircraftID = 1
+  AND F.ScheduledDepUTC >= M.ValidFrom
+  AND F.ScheduledDepUTC < M.ValidTo
   AND F.ValidTo = '9999-12-31 23:59:59.9999999';
+
+/* 11. Aircraft recorded as 'In Maintenance' during a specific application period */
+DECLARE @AppPeriodStart DATETIME2 = '2025-05-11 15:01:43.0000000';
+DECLARE @AppPeriodEnd DATETIME2 = '2025-05-11 15:01:45.0000000';
+
+SELECT DISTINCT AC.TailNumber, M.Status, M.Note, M.ValidFrom AS StatusValidFrom, M.ValidTo AS StatusValidTo
+FROM MaintenanceStatus FOR SYSTEM_TIME ALL M
+JOIN Aircraft AC ON M.AircraftID = AC.AircraftID
+WHERE M.Status = 'In Maintenance'
+  AND M.ValidFrom < @AppPeriodEnd
+  AND M.ValidTo > @AppPeriodStart;
