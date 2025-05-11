@@ -111,25 +111,49 @@ EXEC sys.sp_set_session_context @key = N'LastMaintenanceDate', @value = '2024-07
 GO
 
 /* Add a maintenance procedure to handle future dating */
-CREATE OR ALTER PROCEDURE ScheduleMaintenance 
-    @AircraftID INT, 
-    @Status NVARCHAR(30),
-    @Note NVARCHAR(200),
-    @StartDate DATETIME2,
-    @EndDate DATETIME2
+CREATE OR ALTER PROCEDURE ScheduleMaintenance
+    @AircraftID INT,
+    @OriginalStatus NVARCHAR(30), /* The status we expect to transition FROM */
+    @OriginalNote NVARCHAR(200), /* The note of the status we expect to transition FROM */
+    @StartDate DATETIME2,    /* Corresponds to when maintenance was scheduled to start */
+    @EndDate DATETIME2        /* Corresponds to when maintenance was scheduled to end */
 AS
 BEGIN
-    -- Use temporal table versioning to get history
-    INSERT INTO MaintenanceStatus (AircraftID,Status,Note) 
-    VALUES (@AircraftID,@Status,@Note);
+    -- This procedure marks a specific aircraft as 'In Service'
+    -- assuming it was previously in @OriginalStatus.
+    -- This will make the old status historical and the 'In Service' status current.
 
-    -- Add rows to simulate the actual start/end state
-    INSERT INTO MaintenanceStatus (AircraftID,Status,Note) 
-    VALUES (@AircraftID,'In Service','Aircraft returned from maintenance');
+    IF EXISTS (SELECT 1 FROM MaintenanceStatus WHERE AircraftID = @AircraftID AND Status = @OriginalStatus AND ValidTo = '9999-12-31 23:59:59.9999999')
+    BEGIN
+        UPDATE MaintenanceStatus
+        SET Status = 'In Service',
+            Note = 'Aircraft returned from maintenance on ' + CONVERT(NVARCHAR, @EndDate, 120) + '. Original: ' + @OriginalNote
+        WHERE AircraftID = @AircraftID AND Status = @OriginalStatus;
+    END
+    ELSE
+    BEGIN
+        PRINT 'Warning: Aircraft ' + CAST(@AircraftID AS NVARCHAR) + ' was not in status ' + @OriginalStatus + ' or was not the current record. Attempting to insert ''In Service'' status directly for ' + CONVERT(NVARCHAR, @EndDate, 120) + '.';
+        -- Attempt to insert only if no current record for this aircraft exists, or if the update path wasn't taken.
+        -- This part might still cause issues if another "current" record exists for this AircraftID that wasn't @OriginalStatus
+        IF NOT EXISTS (SELECT 1 FROM MaintenanceStatus WHERE AircraftID = @AircraftID AND ValidTo = '9999-12-31 23:59:59.9999999')
+        BEGIN
+            INSERT INTO MaintenanceStatus (AircraftID, Status, Note)
+            VALUES (@AircraftID, 'In Service', 'Aircraft set to In Service (original state ' + @OriginalStatus + ' not found as current) on ' + CONVERT(NVARCHAR, @EndDate, 120));
+        END
+        ELSE
+        BEGIN
+             PRINT 'Info: Aircraft ' + CAST(@AircraftID AS NVARCHAR) + ' already has a current maintenance status. ''In Service'' not inserted via fallback to prevent PK violation.';
+        END
+    END
 END
 GO
 
 /* Schedule the maintenance */
-EXEC ScheduleMaintenance @AircraftID=1, @Status='Scheduled A-check', 
-     @Note='Aircraft unavailable', @StartDate='2024-07-10', @EndDate='2024-07-20';
+/* The initial INSERT on line 102 sets (1, 'Scheduled A-check', 'Aircraft unavailable') */
+/* So, we call the procedure to transition from that state. */
+EXEC ScheduleMaintenance @AircraftID=1,
+     @OriginalStatus='Scheduled A-check',
+     @OriginalNote='Aircraft unavailable', /* This is the note from the INSERT on line 102 */
+     @StartDate='2024-07-10',
+     @EndDate='2024-07-20';
 GO

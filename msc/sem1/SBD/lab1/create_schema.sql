@@ -179,8 +179,12 @@ GO
 --------------------------------------------------------- */
 
 /* Rule #3: No two FlightSchedules may use the same aircraft at the same time */
+/* Commenting out this index as it conflicts with loading multiple distinct future flights for the same aircraft,
+   where each becomes a "current" record in system time (ValidTo = max_date),
+   violating the (AircraftID, ValidTo) uniqueness.
 CREATE UNIQUE INDEX UX_Aircraft_Uniqueness
 ON FlightSchedule (AircraftID, ValidTo);
+*/
 GO
 
 /* Instead of complex constraint, we'll create a trigger for Rule #2 */

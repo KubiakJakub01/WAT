@@ -37,3 +37,33 @@ sqlcmd -S localhost -U sa -P "Str0ngPassw0rd!" -C -i create_schema.sql
 ```bash
 sqlcmd -S localhost -U sa -P "Str0ngPassw0rd!" -C -Q "USE AirlinesTemporalDB; SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' ORDER BY TABLE_NAME;"
 ```
+
+5. Skrypt wypełniający bazę danych:
+
+```bash
+sqlcmd -S localhost -U sa -P "Str0ngPassw0rd!" -C -i load_data.sql
+```
+
+6. Sprawdzenie czy dane zostały wprowadzone poprawnie:
+
+```bash
+sqlcmd -S localhost -U sa -P "Str0ngPassw0rd!" -C -Q "USE AirlinesTemporalDB; SELECT TOP 5 * FROM Airports;"
+```
+
+```bash
+sqlcmd -S localhost -U sa -P "Str0ngPassw0rd!" -C -Q "USE AirlinesTemporalDB; SELECT TOP 5 * FROM Aircraft;"
+```
+
+```bash
+sqlcmd -S localhost -U sa -P "Str0ngPassw0rd!" -C -Q "USE AirlinesTemporalDB; SELECT TOP 5 * FROM Routes;"
+```
+
+```bash
+sqlcmd -S localhost -U sa -P "Str0ngPassw0rd!" -C -Q "USE AirlinesTemporalDB; SELECT * FROM MaintenanceStatus;"
+```
+
+7. Wykonanie zapytań:
+
+```bash
+sqlcmd -S localhost -U sa -P "Str0ngPassw0rd!" -C -i queries.sql
+```
