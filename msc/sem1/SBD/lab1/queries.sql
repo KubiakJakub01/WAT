@@ -78,23 +78,32 @@ WHERE EXISTS (
 );
 
 /* 8. Past seat availability vs. now – detect high-selling flights */
-SELECT
-    F.FlightID,
-    SI_Hist.SeatsLeft AS SeatsInitially,
-    SI_current.SeatsLeft AS SeatsNow,
-    (COALESCE(SI_Hist.SeatsLeft, 0) - COALESCE(SI_current.SeatsLeft, 0)) AS SeatsSold
-FROM FlightSchedule F
-LEFT JOIN (
-    SELECT FlightID, CabinClass, SeatsLeft, ValidFrom, ValidTo
+-- Revised to find the earliest inventory record more reliably
+WITH InitialSeatInventory AS (
+    SELECT
+        FlightID,
+        CabinClass,
+        SeatsLeft,
+        -- Assign row number 1 to the earliest record for each flight/class
+        ROW_NUMBER() OVER(PARTITION BY FlightID, CabinClass ORDER BY ValidFrom ASC) as rn
     FROM SeatInventory FOR SYSTEM_TIME ALL
     WHERE CabinClass = 'Y'
-) SI_Hist
-    ON F.FlightID = SI_Hist.FlightID
-    AND F.ValidFrom >= SI_Hist.ValidFrom
-    AND F.ValidFrom < SI_Hist.ValidTo
+)
+SELECT
+    F.FlightID,
+    ISI.SeatsLeft AS SeatsInitially,
+    SI_current.SeatsLeft AS SeatsNow,
+    -- Calculate seats sold based on the earliest known inventory and current inventory
+    (COALESCE(ISI.SeatsLeft, 0) - COALESCE(SI_current.SeatsLeft, 0)) AS SeatsSold
+FROM FlightSchedule F
+-- Join with the earliest inventory record (rn=1)
+JOIN InitialSeatInventory ISI
+    ON F.FlightID = ISI.FlightID AND ISI.CabinClass = 'Y' AND ISI.rn = 1
+-- Join with the current inventory record
 JOIN SeatInventory SI_current
     ON SI_current.FlightID = F.FlightID AND SI_current.CabinClass = 'Y'
     AND SI_current.ValidTo = '9999-12-31 23:59:59.9999999'
+-- Consider only currently valid flight schedules
 WHERE F.ValidTo = '9999-12-31 23:59:59.9999999'
 ORDER BY SeatsSold DESC;
 
