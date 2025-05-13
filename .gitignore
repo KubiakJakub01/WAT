@@ -3,6 +3,7 @@
 **/logs/*
 **/outputs/*
 **/database.db
+**/raport/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
