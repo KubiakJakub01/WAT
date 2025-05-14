@@ -1,5 +1,5 @@
 /* ---------------------------------------------------------
-   5.1  Create the database (if it doesn't exist)
+   5.1  Create the database
 --------------------------------------------------------- */
 IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'AirlinesTemporalDB')
 BEGIN
@@ -60,7 +60,7 @@ DROP TABLE IF EXISTS dbo.Airports;
 GO
 
 /* ---------------------------------------------------------
-   5.2  Static reference tables (6x, non-temporal)
+   5.2  Static reference tables
 --------------------------------------------------------- */
 CREATE TABLE Airports (
     AirportID  INT          IDENTITY PRIMARY KEY,
@@ -107,7 +107,7 @@ CREATE TABLE Tickets (
 );
 
 /* ---------------------------------------------------------
-   5.3  Temporal tables (5x)
+   5.3  Temporal tables
 --------------------------------------------------------- */
 
 /* 1. FlightSchedule - removed calculated column that referenced DistanceKm */
@@ -175,19 +175,14 @@ WITH (SYSTEM_VERSIONING = ON (HISTORY_TABLE = dbo.MaintenanceStatus_History));
 GO
 
 /* ---------------------------------------------------------
-   5.4  Temporal rules / constraints - simplified
+   5.4  Temporal rules / constraints
 --------------------------------------------------------- */
 
 /* Rule #3: No two FlightSchedules may use the same aircraft at the same time */
-/* Commenting out this index as it conflicts with loading multiple distinct future flights for the same aircraft,
-   where each becomes a "current" record in system time (ValidTo = max_date),
-   violating the (AircraftID, ValidTo) uniqueness.
 CREATE UNIQUE INDEX UX_Aircraft_Uniqueness
 ON FlightSchedule (AircraftID, ValidTo);
-*/
 GO
 
-/* Instead of complex constraint, we'll create a trigger for Rule #2 */
 CREATE TRIGGER TR_SeatInventory_CheckCapacity
 ON SeatInventory
 AFTER INSERT, UPDATE
