@@ -16,7 +16,7 @@ INSERT INTO Airports (IATACode, Name, City, Country) VALUES
 ('FRA','Frankfurt Airport','Frankfurt','Germany'), -- ID 11
 ('MAD','Madrid Barajas','Madrid','Spain'),        -- ID 12
 ('BCN','Barcelona El Prat','Barcelona','Spain'),  -- ID 13
-('FCO','Rome Fiumicino','Rome','Italy'),         -- ID 14 (Changed ROME to FCO)
+('FCO','Rome Fiumicino','Rome','Italy'),         -- ID 14
 ('ZRH','Zurich Airport','Zurich','Switzerland'),-- ID 15
 ('VIE','Vienna Schwechat','Vienna','Austria'),    -- ID 16
 ('PRG','Prague Vaclav Havel','Prague','Czech Republic'), -- ID 17
@@ -33,10 +33,9 @@ INSERT INTO Aircraft (TailNumber, Model, Seats) VALUES
 
 /* Routes (20) */
 INSERT INTO Routes (OriginID, DestID, DistanceKm) VALUES
-(1,4, 520),(1,5, 800),(1,6,1440),(1,7,1360),(1,8,1100), -- Original using IDs 1-8
+(1,4, 520),(1,5, 800),(1,6,1440),(1,7,1360),(1,8,1100),
 (4,6, 930),(4,7,1050),(5,6, 460),(6,7,340),(6,8,370),
-(8,6,370),(9,6,5570),(1,2,250),(2,3,470),(3,1,300), -- Original 15 (IDs 1-15 in Routes table)
--- New Routes (IDs 16-20 in Routes table)
+(8,6,370),(9,6,5570),(1,2,250),(2,3,470),(3,1,300),
 (11,12, 1800), -- Frankfurt (11) to Madrid (12)
 (13,14, 720),  -- Barcelona (13) to Rome (14)
 (15,16, 600),  -- Zurich (15) to Vienna (16)
@@ -64,7 +63,7 @@ SELECT RouteID,'Y', 0.12*DistanceKm FROM Routes;
 UPDATE FarePricing SET PriceEUR = PriceEUR*1.10;
 DECLARE @r INT = 1;
 DECLARE @TotalRoutes INT;
-SELECT @TotalRoutes = COUNT(*) FROM Routes; -- Get total number of routes dynamically
+SELECT @TotalRoutes = COUNT(*) FROM Routes;
 WHILE @r <= @TotalRoutes
 BEGIN
    UPDATE FarePricing SET PriceEUR = PriceEUR*0.9 WHERE RouteID=@r;
@@ -78,7 +77,7 @@ SELECT
     DATEADD(MINUTE, (SELECT DistanceKm FROM Routes WHERE RouteID = R.RouteID)/9.6, DepTime) AS ArrTime,
     'planned'
 FROM (
-    VALUES -- Original 25 flights
+    VALUES
     (1,1,'2024-06-15 05:00'), (2,2,'2024-06-15 06:30'), (3,3,'2024-06-15 07:00'),
     (4,4,'2024-06-16 11:00'), (5,5,'2024-06-16 22:00'), (6,1,'2024-06-17 05:00'),
     (7,2,'2024-06-17 08:00'), (8,3,'2024-06-17 09:00'), (9,4,'2024-06-17 12:00'),
@@ -88,7 +87,6 @@ FROM (
     (4,4,'2024-07-02 11:00'), (5,5,'2024-07-02 22:00'), (6,1,'2024-07-03 05:00'),
     (7,2,'2024-07-03 08:00'), (8,3,'2024-07-03 10:00'), (9,4,'2024-07-03 12:00'),
     (10,5,'2024-07-03 14:00'),
-    -- New 15 flights using new routes and aircraft
     (16,6,'2024-08-01 10:00'), (17,7,'2024-08-01 12:00'), (18,8,'2024-08-02 14:00'),
     (19,9,'2024-08-02 16:00'), (20,10,'2024-08-03 18:00'),(16,11,'2024-08-04 10:00'),
     (17,12,'2024-08-04 12:00'),(18,13,'2024-08-05 14:00'),(19,14,'2024-08-05 16:00'),
@@ -110,11 +108,7 @@ SELECT FlightID,'Purser '+RIGHT('00'+CAST(FlightID AS VARCHAR),3),'purser' FROM 
 
 
 /* Maintenance Status - adding more records for >20 total */
--- Original for AircraftID 1
 INSERT INTO MaintenanceStatus (AircraftID,Status,Note) VALUES (1,'Scheduled A-check','Aircraft unavailable');
--- This will be updated by the ScheduleMaintenance procedure later
-
--- Add initial 'In Service' for several new aircraft
 INSERT INTO MaintenanceStatus (AircraftID, Status, Note) VALUES (6, 'In Service', 'New aircraft, initial status.');
 INSERT INTO MaintenanceStatus (AircraftID, Status, Note) VALUES (7, 'In Service', 'New aircraft, initial status.');
 INSERT INTO MaintenanceStatus (AircraftID, Status, Note) VALUES (8, 'In Service', 'New aircraft, initial status.');
@@ -124,12 +118,9 @@ INSERT INTO MaintenanceStatus (AircraftID, Status, Note) VALUES (13, 'In Service
 INSERT INTO MaintenanceStatus (AircraftID, Status, Note) VALUES (14, 'In Service', 'New aircraft, initial status.');
 INSERT INTO MaintenanceStatus (AircraftID, Status, Note) VALUES (15, 'In Service', 'New aircraft, initial status.');
 
-
--- Add history for a few aircraft (AircraftID 9, 10, 16, 17, 18)
--- Each sequence adds 4 records to history + 1 current = 5 total per aircraft here. 5*5 = 25 records.
 DECLARE @AircraftForMaint INT;
 SET @AircraftForMaint = 9;
-WHILE @AircraftForMaint <= 18 -- Process aircraft 9, 10, 16, 17, 18 for varied history
+WHILE @AircraftForMaint <= 18
 BEGIN
     IF @AircraftForMaint IN (9,10,16,17,18)
     BEGIN
@@ -183,8 +174,6 @@ INSERT INTO Bookings (PassengerID, RouteID, BookingDate) VALUES
 (16,14,'2024-05-06'),(17,15,'2024-05-07'),(18,16,'2024-05-08'),(19,17,'2024-05-09'),(20,18,'2024-05-10');
 
 /* Tickets (20 records) - linking to Bookings */
--- Assuming FarePaid is derived somehow, for simplicity setting fixed values or linking to FarePricing at booking time
--- For simplicity, I will just add some sample values. A real system would fetch price at booking time.
 INSERT INTO Tickets (BookingID, SeatNumber, FarePaid) VALUES
 (1,'10A',120.50), (2,'10B',120.50), (3,'12C',150.00), (4,'12D',150.00), (5,'14E',90.75),
 (6,'1A',200.00), (7,'2B',250.00), (8,'3C',180.00), (9,'4D',300.00), (10,'5E',220.00),
