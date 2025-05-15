@@ -20,13 +20,13 @@ def parse_args():
         if args.input is None:
             args.input = generate_random_bits_string(TYPE_TO_LEN_DICT[args.input_type])
         if args.input_type == "float":
-            assert (
-                len(args.input) == 32
-            ), "Binary string must be 32 bits long for float type"
+            assert len(args.input) == 32, (
+                "Binary string must be 32 bits long for float type"
+            )
         if args.input_type == "double":
-            assert (
-                len(args.input) == 64
-            ), "Binary string must be 64 bits long for double type"
+            assert len(args.input) == 64, (
+                "Binary string must be 64 bits long for double type"
+            )
         return args
 
     return _valid_args(parser.parse_args())

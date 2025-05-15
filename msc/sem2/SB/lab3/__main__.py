@@ -90,4 +90,6 @@ are_independent_numpy = np.allclose(p_bc_given_a, product)
 
 print(f"P(B, C | A):\n{p_bc_given_a}")
 print(f"P(B | A) * P(C | A):\n{product}")
-print(f"Are B and C conditionally independent given A (NumPy check)? {are_independent_numpy}")
+print(
+    f"Are B and C conditionally independent given A (NumPy check)? {are_independent_numpy}"
+)

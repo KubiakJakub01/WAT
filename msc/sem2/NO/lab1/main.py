@@ -1,7 +1,8 @@
-import numpy as np
-import pandas as pd
 import math
 import os
+
+import numpy as np
+import pandas as pd
 
 
 def read_data(file_path):
@@ -87,7 +88,7 @@ def schick_wolverton_mle(times, precision=1e-11):
             if denominator <= 0:
                 # This N is invalid because N must be > n-1 for the sum term
                 print(
-                    f"Iteration {iteration}: N={N:.5f} is <= n-1 ({n-1}). Resetting N."
+                    f"Iteration {iteration}: N={N:.5f} is <= n-1 ({n - 1}). Resetting N."
                 )
                 # Reset N to a value slightly larger than n-1 to attempt recovery
                 N = float(n)  # Reset N to be just > n-1
@@ -115,7 +116,7 @@ def schick_wolverton_mle(times, precision=1e-11):
         # Ensure N remains > n-1 for the next iteration's sum calculation
         if new_N <= n - 1:
             print(
-                f"Iteration {iteration}: Calculated new_N={new_N:.5f} <= n-1 ({n-1}). Adjusting N."
+                f"Iteration {iteration}: Calculated new_N={new_N:.5f} <= n-1 ({n - 1}). Adjusting N."
             )
             # Set N slightly above n-1 to allow the sum next iteration
             N = float(n) + 1
@@ -134,12 +135,12 @@ def schick_wolverton_mle(times, precision=1e-11):
             for j in range(n):
                 # Should be safe now since N converged to a value > n-1
                 if N - j <= 0:
-                    print(f"Error: Converged N={N} is not > n-1={n-1}. Check logic.")
+                    print(f"Error: Converged N={N} is not > n-1={n - 1}. Check logic.")
                     return None, None
                 sum_1_div_N_minus_j += 1.0 / (N - j)
             phi = (2.0 / T) * sum_1_div_N_minus_j
             print(
-                f"Converged after {iteration+1} iterations with N={N:.4f} and phi={phi:.10f}"
+                f"Converged after {iteration + 1} iterations with N={N:.4f} and phi={phi:.10f}"
             )
             return N, phi
 
