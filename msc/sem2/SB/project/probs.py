@@ -4,16 +4,15 @@ from pathlib import Path
 import pandas as pd
 
 structure = {
-    'asia': [],
-    'tub': ['asia'],
-    'smoke': [],
-    'lung': ['smoke'],
-    'bronc': ['smoke'],
-    'either': ['tub', 'lung'],
-    'xray': ['either'],
-    'dysp': ['bronc', 'either']
+    "asia": [],
+    "tub": ["asia"],
+    "smoke": [],
+    "lung": ["smoke"],
+    "bronc": ["smoke"],
+    "either": ["tub", "lung"],
+    "xray": ["either"],
+    "dysp": ["bronc", "either"],
 }
-
 
 
 def marginal(df, col):
@@ -24,7 +23,7 @@ def conditional(df, child, parents):
     if not parents:
         return marginal(df, child)
     cpt = {}
-    parent_values = df[parents].drop_duplicates().to_dict('records')
+    parent_values = df[parents].drop_duplicates().to_dict("records")
     for pv in parent_values:
         mask = (df[parents] == pd.Series(pv)).all(axis=1)
         sub = df[mask]
