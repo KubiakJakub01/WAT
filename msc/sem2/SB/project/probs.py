@@ -60,6 +60,6 @@ def main(df):
 
 
 if __name__ == "__main__":
-    data_fp = Path("raport") / "ASIA_DATA.csv"
+    data_fp = Path(__file__).parent / "raport" / "ASIA_DATA.csv"
     df = pd.read_csv(data_fp)
     main(df)

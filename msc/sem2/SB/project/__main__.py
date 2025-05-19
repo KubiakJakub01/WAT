@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from pgmpy.factors.discrete import TabularCPD
 from pgmpy.inference import VariableElimination
-from pgmpy.models import BayesianNetwork
+from pgmpy.models import DiscreteBayesianNetwork
 
 # Define the structure of the Bayesian network
 # Node structure map: node -> list of parents
@@ -172,7 +172,7 @@ def main():
     """Main function to build the Bayesian network and perform inference."""
     print("Starting Bayesian Network construction and inference for 'Asia' dataset.\\n")
 
-    data_file_path = Path("raport") / "ASIA_DATA.csv"
+    data_file_path = Path(__file__).parent / "raport" / "ASIA_DATA.csv"
     print(f"Attempting to load data from: {data_file_path.resolve()}")
     if not data_file_path.exists():
         print(f"ERROR: Data file not found at {data_file_path.resolve()}")
@@ -203,8 +203,8 @@ def main():
             print("Please clean the data so all nodes have 0 or 1 values.")
             return
 
-    print("\\nBuilding Bayesian Network model...")
-    model = BayesianNetwork(EDGES)
+    print("\nBuilding Bayesian Network model...")
+    model = DiscreteBayesianNetwork(EDGES)
 
     cpds_list = []
     print("Estimating CPTs from data...")
@@ -218,7 +218,7 @@ def main():
 
     model.add_cpds(*cpds_list)
 
-    print("\\nChecking model validity...")
+    print("\nChecking model validity...")
     try:
         model.check_model()
         print("Model is valid.")
@@ -229,13 +229,13 @@ def main():
         #     print(c)
         return
 
-    print("\\nCreating inference object (VariableElimination)...")
+    print("\nCreating inference object (VariableElimination)...")
     infer = VariableElimination(model)
 
-    print("\\n--- Task 2: Inference Queries ---")
+    print("\n--- Task 2: Inference Queries ---")
 
     # 2a. Joint a priori distribution for all variables
-    print("\\n2a. Joint a priori P(all variables):")
+    print("\n2a. Joint a priori P(all variables):")
     try:
         joint_all_prior = infer.query(variables=NODES, joint=True)
         print("Full joint distribution for all 8 variables (2^8 = 256 states).")
@@ -248,7 +248,7 @@ def main():
 
     # 2b. Joint a priori distribution for a selected subset of variables
     subset_vars_b = ["lung", "bronc", "xray"]
-    print(f"\\n2b. Joint a priori P({', '.join(subset_vars_b)}):")
+    print(f"\n2b. Joint a priori P({', '.join(subset_vars_b)}):")
     try:
         joint_subset_prior = infer.query(variables=subset_vars_b, joint=True)
         print(joint_subset_prior)
@@ -256,42 +256,40 @@ def main():
         print(f"Error calculating joint a priori for subset {subset_vars_b}: {e}")
 
     # 2c. Marginal a posteriori (conditional) for all variables except evidence
-    evidence_c_numeric = {"asia": 1, "smoke": 0}  # asia='yes', smoke='no'
-    evidence_c_str = {k: STRING_STATES[v] for k, v in evidence_c_numeric.items()}
+    evidence_c_numeric = {'asia': 1, 'smoke': 0} # asia='yes', smoke='no'
+    evidence_c_str = {k: STRING_STATES[v] for k,v in evidence_c_numeric.items()}
     print(
-        f"\\n2c. Marginal a posteriori distributions given evidence: {evidence_c_str}"
+        f"\n2c. Marginal a posteriori distributions given evidence: {evidence_c_str}"
     )
 
     query_vars_c = [node for node in NODES if node not in evidence_c_numeric.keys()]
 
     for var_name in query_vars_c:
         try:
-            marginal_posterior = infer.query(
-                variables=[var_name], evidence=evidence_c_numeric
-            )
-            print(f"\\nP({var_name} | {evidence_c_str}):")
+            # Use evidence_c_str which has string state names
+            marginal_posterior = infer.query(variables=[var_name], evidence=evidence_c_str)
+            print(f"\nP({var_name} | {evidence_c_str}):")
             print(marginal_posterior)
         except Exception as e:
             print(f"Error calculating P({var_name} | {evidence_c_str}): {e}")
 
     # 2d. Joint a posteriori (conditional) for selected variables except evidence
     subset_vars_d = ["tub", "either"]
-    evidence_d_numeric = evidence_c_numeric
-    evidence_d_str = evidence_c_str
+    # evidence_d_numeric = evidence_c_numeric # Not needed if using evidence_d_str
+    evidence_d_str = evidence_c_str # Re-use the same evidence dictionary with string states
     print(
-        f"\\n2d. Joint a posteriori P({', '.join(subset_vars_d)} | {evidence_d_str}):"
+        f"\n2d. Joint a posteriori P({', '.join(subset_vars_d)} | {evidence_d_str}):"
     )
     try:
-        joint_subset_posterior = infer.query(
-            variables=subset_vars_d, evidence=evidence_d_numeric, joint=True
-        )
+        # Use evidence_d_str which has string state names
+        joint_subset_posterior = infer.query(variables=subset_vars_d, evidence=evidence_d_str, joint=True)
         print(joint_subset_posterior)
     except Exception as e:
         print(
             f"Error calculating joint a posteriori for {subset_vars_d} | {evidence_d_str}: {e}"
         )
 
-    print("\\n\\nScript finished.")
+    print("\n\nScript finished.")
 
 
 if __name__ == "__main__":
