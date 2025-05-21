@@ -1,10 +1,17 @@
-import sys
-
 import pyttsx3
 import speech_recognition as sr
 
+
 speech_on = True
-engine = pyttsx3.init()
+engine = pyttsx3.init(driverName="espeak")
+voices = engine.getProperty("voices")
+# Find and set Polish voice if available
+for voice in voices:
+    if "polish" in voice.name.lower() or "pl" in voice.id.lower():
+        engine.setProperty("voice", voice.id)
+        break
+# Set speech rate slightly slower for better Polish pronunciation
+engine.setProperty("rate", 150)
 recognizer = sr.Recognizer()
 microphone = sr.Microphone()
 
@@ -16,11 +23,12 @@ def speak(text):
 
 def recognize_speech():
     with microphone as source:
+        recognizer.adjust_for_ambient_noise(source)
         print("Słucham...")
         audio = recognizer.listen(source)
 
     try:
-        text = recognizer.recognize_google(audio, language="plPL")
+        text = recognizer.recognize_google(audio, language="pl-PL")
         confidence = 0.9  # Dla uproszczenia - recognize_google nie zwraca confidence
         print(f"ROZPOZNANO (wiarygodność: {confidence:0.3f}): '{text}'")
         return text, confidence
@@ -47,25 +55,25 @@ def handle_command(text, confidence):
         elif "oblicz" in text:
             words = text.split()
             try:
-                if "plus" in text:
+                if "+" in text:
                     num1 = word_to_number(words[1])
                     num2 = word_to_number(words[3])
                     result = num1 + num2
                     print(f"\tOBLICZONO: {num1} + {num2} = {result}")
                     speak(f"Wynik działania to: {result}")
-                elif "minus" in text:
+                elif "-" in text:
                     num1 = word_to_number(words[1])
                     num2 = word_to_number(words[3])
                     result = num1 - num2
                     print(f"\tOBLICZONO: {num1} - {num2} = {result}")
                     speak(f"Wynik działania to: {result}")
-                elif "razy" in text:
+                elif "x" in text:
                     num1 = word_to_number(words[1])
                     num2 = word_to_number(words[3])
                     result = num1 * num2
                     print(f"\tOBLICZONO: {num1} * {num2} = {result}")
                     speak(f"Wynik działania to: {result}")
-                elif "podzielić" in text or "podziel" in text:
+                elif "/" in text or "podziel" in text:
                     num1 = word_to_number(words[1])
                     num2 = word_to_number(words[3])
                     if num2 != 0:
