@@ -1,18 +1,15 @@
-// Phase 2: Database Design - Constraints
+// -----------------------------------------------------------------------------
+// Constraints
+// -----------------------------------------------------------------------------
+
 
 // Airport Constraints
 CREATE CONSTRAINT airport_iata_code_unique IF NOT EXISTS FOR (a:Airport) REQUIRE a.iata_code IS UNIQUE;
-
-// Airline Constraints
 CREATE CONSTRAINT airline_iata_code_unique IF NOT EXISTS FOR (a:Airline) REQUIRE a.iata_code IS UNIQUE;
-CREATE CONSTRAINT airline_icao_code_unique IF NOT EXISTS FOR (a:Airline) REQUIRE a.icao_code IS UNIQUE; // Assuming icao_code should also be unique
-
-// Aircraft Constraints
+CREATE CONSTRAINT airline_icao_code_unique IF NOT EXISTS FOR (a:Airline) REQUIRE a.icao_code IS UNIQUE;
 CREATE CONSTRAINT aircraft_registration_unique IF NOT EXISTS FOR (a:Aircraft) REQUIRE a.registration_number IS UNIQUE;
 
 // Flight Constraints
-// Note: flight_number might only be unique per airline/date. For this model, we'll assume it's globally unique as per the plan.
-// If not, this constraint might need adjustment or be handled differently (e.g. composite key or relationship property).
 CREATE CONSTRAINT flight_number_unique IF NOT EXISTS FOR (f:Flight) REQUIRE f.flight_number IS UNIQUE;
 
 // Passenger Constraints
@@ -25,9 +22,9 @@ CREATE CONSTRAINT booking_reference_unique IF NOT EXISTS FOR (b:Booking) REQUIRE
 CREATE CONSTRAINT country_iso_code_unique IF NOT EXISTS FOR (c:Country) REQUIRE c.iso_code IS UNIQUE;
 CREATE CONSTRAINT country_name_unique IF NOT EXISTS FOR (c:Country) REQUIRE c.name IS UNIQUE;
 
-// End of Constraints 
-
-// Phase 3: Data Population
+// -----------------------------------------------------------------------------
+// Data population
+// -----------------------------------------------------------------------------
 
 // Load Countries
 LOAD CSV WITH HEADERS FROM 'file:///countries.csv' AS row
@@ -87,8 +84,9 @@ CREATE (b:Booking {
   class_of_service: row.class_of_service
 });
 
-
+// -----------------------------------------------------------------------------
 // Create Relationships
+// -----------------------------------------------------------------------------
 
 // Airport-Country Relationships
 LOAD CSV WITH HEADERS FROM 'file:///airports.csv' AS row
@@ -100,7 +98,7 @@ MERGE (a)-[:LOCATED_IN]->(c);
 LOAD CSV WITH HEADERS FROM 'file:///airlines.csv' AS row
 MATCH (al:Airline {iata_code: row.iata_code})
 MATCH (c:Country {iso_code: row.country_iso_code})
-MATCH (hub:Airport {iata_code: row.hub_airport_iata}) // Assuming hub_airport_iata is in airlines.csv and airports are loaded
+MATCH (hub:Airport {iata_code: row.hub_airport_iata})
 MERGE (al)-[:BASED_IN]->(c)
 MERGE (al)-[:HAS_HUB]->(hub);
 
@@ -125,4 +123,4 @@ MATCH (fl:Flight {flight_number: row.flight_number})
 MERGE (p)-[:HAS_BOOKING]->(b)
 MERGE (b)-[:FOR_FLIGHT]->(fl);
 
-// End of Data Population 
+// End of Data Population
