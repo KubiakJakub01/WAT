@@ -32,9 +32,6 @@ services:
       - ./logs/server1:/logs
       - ./conf/server1:/conf
       - ./import/server1:/import
-      #- ./metrics/server1:/metrics
-      #- ./licenses/server1:/licenses
-      #- ./ssl/server1:/ssl
 
     # Passes the following environment variables to the container
     environment:
@@ -43,6 +40,7 @@ services:
       - EXTENDED_CONF
       - NEO4J_EDITION
       - NEO4J_initial_server_mode__constraint=PRIMARY
+      - NEO4J_PLUGINS=["graph-data-science"]
 
     # Simple check testing whether the port 7474 is opened.
     # If so, the instance running inside the container is considered as "healthy".
@@ -69,15 +67,13 @@ services:
       - ./logs/server2:/logs
       - ./conf/server2:/conf
       - ./import/server2:/import
-      #- ./metrics/server2:/metrics
-      #- ./licenses/server2:/licenses
-      #- ./ssl/server2:/ssl
     environment:
       - NEO4J_ACCEPT_LICENSE_AGREEMENT
       - NEO4J_AUTH
       - EXTENDED_CONF
       - NEO4J_EDITION
       - NEO4J_initial_server_mode__constraint=PRIMARY
+      - NEO4J_PLUGINS=["graph-data-science"]
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider localhost:7474 || exit 1"]
     user: ${USER_ID}:${GROUP_ID}
@@ -98,15 +94,13 @@ services:
       - ./logs/server3:/logs
       - ./conf/server3:/conf
       - ./import/server3:/import
-      #- ./metrics/server3:/metrics
-      #- ./licenses/server3:/licenses
-      #- ./ssl/server3:/ssl
     environment:
       - NEO4J_ACCEPT_LICENSE_AGREEMENT
       - NEO4J_AUTH
       - EXTENDED_CONF
       - NEO4J_EDITION
       - NEO4J_initial_server_mode__constraint=PRIMARY
+      - NEO4J_PLUGINS=["graph-data-science"]
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider localhost:7474 || exit 1"]
     user: ${USER_ID}:${GROUP_ID}
