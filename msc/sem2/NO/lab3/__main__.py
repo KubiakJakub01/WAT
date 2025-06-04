@@ -35,7 +35,7 @@ R_MIN_CONSTRAINT = 0.95
 K_MAX_CONSTRAINT = 4500000.0
 
 # --- Wyszukiwanie ścieżek i obliczanie d_q ---
-paths_details = []  # Lista кортежей: (lista_modułów_w_ścieżce, prawdopodobieństwo_d_q)
+paths_details = []
 
 
 def find_all_paths_recursive(current_node_idx, current_path_modules, current_d_q_prob):
@@ -118,16 +118,11 @@ R_NORM_DENOMINATOR = (
 
 
 def objective_function(R_vector_candidate):
-    # Upewnij się, że wartości R_i są w granicach [0,1] (choć optymalizator powinien to robić)
+    # Wartości R_i muszą być w granicach [0,1]
     R_vector = np.clip(R_vector_candidate, 0.0, 1.0)
 
     k_val = calculate_K(R_vector)
     r_val = calculate_R(R_vector)
-
-    # Normalizacja
-    # Należy uważać, aby k_val i r_val mieściły się w przewidywanych granicach normalizacji,
-    # w przeciwnym razie znormalizowane wartości mogą wyjść poza [0,1].
-    # Dla funkcji odległości nie jest to krytyczne, ale dla interpretacji może być.
 
     k_norm = (k_val - K_NORM_MIN_VAL) / K_NORM_DENOMINATOR
     r_norm = (r_val - R_NORM_MIN_VAL) / R_NORM_DENOMINATOR
@@ -173,14 +168,14 @@ else:
     solution = minimize(
         objective_function,
         initial_R_guess,
-        method="SLSQP",  # Metoda wspierająca ograniczenia i granice
+        method="SLSQP",
         bounds=bounds,
         constraints=constraints,
         options={
             "disp": True,
             "maxiter": 1000,
             "ftol": 1e-9,
-        },  # Zwiększono maxiter i zmieniono ftol
+        },
     )
 
     if solution.success:
@@ -236,6 +231,6 @@ for i, (p, dq) in enumerate(paths_details):
     path_nodes = [
         node_idx + 1 for node_idx in p
     ]  # Konwersja na 1-indeksowanie dla wyświetlenia
-    print(
-        f"  Ścieżka {i+1}: {path_nodes}, d_q = {dq:.4f}"
-    )  # Można odkomentować, aby zobaczyć wszystkie ścieżki
+    # print(
+    #     f"  Ścieżka {i+1}: {path_nodes}, d_q = {dq:.4f}"
+    # )  # Można odkomentować, aby zobaczyć wszystkie ścieżki
