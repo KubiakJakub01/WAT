@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0ea49hr" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.35.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.6.0">
+  <bpmn:process id="Process_0sa25vb" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:outgoing>Flow_11abthv</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Activity_1jzpek7" name="Pobierz listę wypłat">
+      <bpmn:incoming>Flow_11abthv</bpmn:incoming>
+      <bpmn:outgoing>Flow_0tn0tqp</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="Activity_1lwxjxi" name="Akceptacja">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0tn0tqp</bpmn:incoming>
+      <bpmn:outgoing>Flow_0nmri1l</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="Activity_0wdk6g3" name="Zleć przelew">
+      <bpmn:incoming>Flow_0nmri1l</bpmn:incoming>
+      <bpmn:outgoing>Flow_1dygyws</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="Event_0s2cktr">
+      <bpmn:incoming>Flow_1dygyws</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_11abthv" sourceRef="StartEvent_1" targetRef="Activity_1jzpek7" />
+    <bpmn:sequenceFlow id="Flow_0tn0tqp" sourceRef="Activity_1jzpek7" targetRef="Activity_1lwxjxi" />
+    <bpmn:sequenceFlow id="Flow_0nmri1l" sourceRef="Activity_1lwxjxi" targetRef="Activity_0wdk6g3" />
+    <bpmn:sequenceFlow id="Flow_1dygyws" sourceRef="Activity_0wdk6g3" targetRef="Event_0s2cktr" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_0sa25vb">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="152" y="102" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1jzpek7_di" bpmnElement="Activity_1jzpek7">
+        <dc:Bounds x="280" y="80" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1lwxjxi_di" bpmnElement="Activity_1lwxjxi">
+        <dc:Bounds x="480" y="80" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0wdk6g3_di" bpmnElement="Activity_0wdk6g3">
+        <dc:Bounds x="670" y="80" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0s2cktr_di" bpmnElement="Event_0s2cktr">
+        <dc:Bounds x="832" y="102" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_11abthv_di" bpmnElement="Flow_11abthv">
+        <di:waypoint x="188" y="120" />
+        <di:waypoint x="280" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0tn0tqp_di" bpmnElement="Flow_0tn0tqp">
+        <di:waypoint x="380" y="120" />
+        <di:waypoint x="480" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0nmri1l_di" bpmnElement="Flow_0nmri1l">
+        <di:waypoint x="580" y="120" />
+        <di:waypoint x="670" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1dygyws_di" bpmnElement="Flow_1dygyws">
+        <di:waypoint x="770" y="120" />
+        <di:waypoint x="832" y="120" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
