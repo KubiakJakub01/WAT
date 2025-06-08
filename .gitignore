@@ -4,6 +4,9 @@
 **/outputs/*
 **/database.db
 **/raport/*
+**/img/*
+wav2vec2_checkpoints/*
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
