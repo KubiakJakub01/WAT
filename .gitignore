@@ -6,6 +6,10 @@
 **/raport/*
 **/img/*
 **/wav2vec2_checkpoints/*
+**/csv_data/*
+**/neo4j-cluster/conf/*
+**/neo4j-cluster/data/*
+**/neo4j-cluster/import/*
 
 
 # Byte-compiled / optimized / DLL files
