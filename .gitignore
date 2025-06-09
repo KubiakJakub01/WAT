@@ -10,6 +10,8 @@
 **/neo4j-cluster/conf/*
 **/neo4j-cluster/data/*
 **/neo4j-cluster/import/*
+**/logstashdata/*
+**/data/*
 
 
 # Byte-compiled / optimized / DLL files
