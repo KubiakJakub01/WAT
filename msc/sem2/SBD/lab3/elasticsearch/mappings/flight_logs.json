@@ -1,0 +1,16 @@
+{
+  "properties": {
+    "@timestamp": { "type": "date" },
+    "flight_number": { "type": "keyword" },
+    "old_status": { "type": "keyword" },
+    "new_status": { "type": "keyword" },
+    "reason": {
+      "type": "text",
+      "fields": {
+        "keyword": {
+          "type": "keyword"
+        }
+      }
+    }
+  }
+} 

@@ -1,0 +1,4 @@
+# Settings for Logstash
+http.host: "0.0.0.0"
+path.config: /usr/share/logstash/pipeline
+path.data: /usr/share/logstash/pipeline-data 

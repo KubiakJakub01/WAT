@@ -1,0 +1,18 @@
+{
+  "properties": {
+    "flight_number": { "type": "keyword" },
+    "departure_airport_code": { "type": "keyword" },
+    "arrival_airport_code": { "type": "keyword" },
+    "departure_time": { "type": "date" },
+    "arrival_time": { "type": "date" },
+    "aircraft_id": { "type": "keyword" },
+    "airline_name": {
+      "type": "text",
+      "fields": {
+        "keyword": { "type": "keyword" }
+      }
+    },
+    "flight_duration": { "type": "integer" },
+    "status": { "type": "keyword" }
+  }
+} 

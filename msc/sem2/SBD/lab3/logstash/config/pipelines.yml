@@ -1,0 +1,10 @@
+# This file defines the different pipelines that Logstash will run.
+# For this project, we will have two pipelines:
+# 1. A pipeline to ingest the main airline data from CSV files.
+# 2. A pipeline to ingest simulated flight status logs.
+
+- pipeline.id: main-csv-pipeline
+  path.config: "/usr/share/logstash/pipeline/csv_importer.conf"
+
+- pipeline.id: flight-logs-pipeline
+  path.config: "/usr/share/logstash/pipeline/logs_importer.conf" 
