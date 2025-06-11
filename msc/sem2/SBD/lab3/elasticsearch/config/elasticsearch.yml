@@ -1,6 +1,9 @@
 cluster.name: "airline-project-cluster"
 network.host: 0.0.0.0
 
+# Bootstrap the cluster (required for first-time startup)
+cluster.initial_master_nodes: ["es01", "es02", "es03"]
+
 # Disable security features for local development
 xpack.security.enabled: false
 xpack.security.enrollment.enabled: false
