@@ -1,24 +1,26 @@
 {
-  "properties": {
-    "airport_code": { "type": "keyword" },
-    "name": {
-      "type": "text",
-      "fields": {
-        "keyword": { "type": "keyword" }
-      }
-    },
-    "city": {
-      "type": "text",
-      "fields": {
-        "keyword": { "type": "keyword" }
-      }
-    },
-    "country": {
-      "type": "text",
-      "fields": {
-        "keyword": { "type": "keyword" }
-      }
-    },
-    "location": { "type": "geo_point" }
+  "mappings": {
+    "properties": {
+      "airport_code": { "type": "keyword" },
+      "name": {
+        "type": "text",
+        "fields": {
+          "keyword": { "type": "keyword" }
+        }
+      },
+      "city": {
+        "type": "text",
+        "fields": {
+          "keyword": { "type": "keyword" }
+        }
+      },
+      "country": {
+        "type": "text",
+        "fields": {
+          "keyword": { "type": "keyword" }
+        }
+      },
+      "location": { "type": "geo_point" }
+    }
   }
 } 
