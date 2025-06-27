@@ -3,20 +3,21 @@ import spacy
 # Load pre-trained model (e.g., for English)
 nlp = spacy.load("en_core_web_sm")
 
+
 def detect_entities(text):
     doc = nlp(text)
-    
+
     entities = {
         "PERSON": [],
         "ORG": [],
         "GPE": [],  # Geopolitical Entity (countries, cities, states)
-        "LOC": []   # Locations (mountains, rivers, etc.)
+        "LOC": [],  # Locations (mountains, rivers, etc.)
     }
-    
+
     for ent in doc.ents:
         if ent.label_ in entities:
             entities[ent.label_].append(ent.text)
-    
+
     return entities
 
 
