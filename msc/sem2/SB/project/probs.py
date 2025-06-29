@@ -16,10 +16,16 @@ structure = {
 
 
 def marginal(df, col):
+    """
+    Calculate the marginal probability of a column in the dataframe.
+    """
     return df[col].value_counts(normalize=True).to_dict()
 
 
 def conditional(df, child, parents):
+    """
+    Calculate the conditional probability of a child given its parents.
+    """
     if not parents:
         return marginal(df, child)
     cpt = {}
