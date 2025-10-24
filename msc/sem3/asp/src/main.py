@@ -1,3 +1,8 @@
+"""Main module for running the bot detection experiments.
+
+Usage:
+    python src.main -h
+"""
 import argparse
 from datetime import datetime
 from pathlib import Path
