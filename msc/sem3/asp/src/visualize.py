@@ -1,8 +1,8 @@
-import networkx as nx
-import matplotlib.pyplot as plt
 import os
+
+import matplotlib.pyplot as plt
+import networkx as nx
 import pandas as pd
-import numpy as np
 
 
 def visualize_k_core(G, output_dir):

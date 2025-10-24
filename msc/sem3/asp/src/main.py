@@ -2,9 +2,9 @@ import argparse
 from datetime import datetime
 from pathlib import Path
 
-from data_loader import load_graph
-from experiment1 import detect_bot_communities
-from experiment2 import analyze_assortativity_and_core_periphery
+from .data_loader import load_graph
+from .experiment2 import detect_bot_communities
+from .experiment4 import analyze_assortativity_and_core_periphery
 
 OUTPUT_DIR = Path(__file__).parent.parent / "outputs"
 
@@ -15,7 +15,7 @@ def parse_args():
         "--experiment",
         type=str,
         default="all",
-        choices=["all", "experiment1", "experiment2"],
+        choices=["all", "experiment2", "experiment4"],
         help="Experiment to run",
     )
     return parser.parse_args()
@@ -37,12 +37,12 @@ def main(experiment: str):
     print("Graph loaded successfully.")
 
     # Run Experiment 1
-    if experiment == "all" or experiment == "experiment1":
+    if experiment == "all" or experiment == "experiment2":
         print("Running Experiment 1...")
         detect_bot_communities(G, output_dir)
 
     # Run Experiment 2
-    if experiment == "all" or experiment == "experiment2":
+    if experiment == "all" or experiment == "experiment4":
         print("Running Experiment 2...")
         analyze_assortativity_and_core_periphery(G, output_dir)
 

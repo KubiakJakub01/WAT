@@ -4,7 +4,8 @@ from pathlib import Path
 import networkx as nx
 import pandas as pd
 from community import community_louvain
-from visualize import plot_bot_contamination_by_community
+
+from .visualize import plot_bot_contamination_by_community
 
 MIN_COMMUNITY_SIZE = 3
 

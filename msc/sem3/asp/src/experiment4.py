@@ -1,11 +1,9 @@
 from pathlib import Path
 
 import networkx as nx
-from visualize import (
-    plot_bot_percentage_by_core,
-    plot_degree_distribution,
-    visualize_k_core,
-)
+
+from .visualize import (plot_bot_percentage_by_core, plot_degree_distribution,
+                        visualize_k_core)
 
 
 def analyze_assortativity_and_core_periphery(G: nx.DiGraph, output_dir: Path):
